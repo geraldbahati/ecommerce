@@ -16,7 +16,6 @@ func NewSQLUserRepository(db *database.Queries) *SQLUserRepository {
 	}
 }
 
-// User queries
 // CreateUser creates a new user
 func (r *SQLUserRepository) CreateUser(ctx context.Context, user model.UserRegister) (model.User, error) {
 	// insert user into database
@@ -53,4 +52,9 @@ func (r *SQLUserRepository) CreateUser(ctx context.Context, user model.UserRegis
 		ProfilePicture:  createdUser.ProfilePicture,
 		TwoFactorAuth:   createdUser.TwoFactorAuth,
 	}, nil
+}
+
+// CountAllUsersByUsername returns the number of users with the given username
+func (r *SQLUserRepository) CountAllUsersByUsername(ctx context.Context, username string) (int64, error) {
+	return r.DB.CountAllUsersByUsername(ctx, username)
 }

@@ -79,6 +79,18 @@ func (q *Queries) CountAllUsers(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countAllUsersByUsername = `-- name: CountAllUsersByUsername :one
+SELECT COUNT(*) FROM users
+WHERE username = $1
+`
+
+func (q *Queries) CountAllUsersByUsername(ctx context.Context, username string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAllUsersByUsername, username)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countCustomers = `-- name: CountCustomers :one
 SELECT COUNT(*) FROM users
 WHERE user_role = 'customer'

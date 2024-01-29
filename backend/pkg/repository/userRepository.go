@@ -6,6 +6,6 @@ import (
 )
 
 type UserRepository interface {
-	// User queries
 	CreateUser(ctx context.Context, user model.UserRegister) (model.User, error)
+	CountAllUsersByUsername(ctx context.Context, username string) (int64, error)
 }

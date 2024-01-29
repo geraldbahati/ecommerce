@@ -20,7 +20,6 @@ func NewUserHandler(userService usecases.UserService) *UserHandler {
 func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// params
 	var params struct {
-		Username  string `json:"username"`
 		Email     string `json:"email"`
 		Password  string `json:"password"`
 		FirstName string `json:"first_name"`
@@ -35,7 +34,7 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// create user
-	user, err := h.userService.CreateUser(r.Context(), params.Username, params.Email,
+	user, err := h.userService.CreateUser(r.Context(), params.Email,
 		params.Password, params.FirstName, params.LastName, params.UserRole)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))

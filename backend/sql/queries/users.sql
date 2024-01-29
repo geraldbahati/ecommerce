@@ -113,6 +113,10 @@ WHERE user_role = 'superadmin';
 SELECT COUNT(*) FROM users
 WHERE user_role = 'customer';
 
+-- name: CountAllUsersByUsername :one
+SELECT COUNT(*) FROM users
+WHERE username = $1;
+
 -- name: RecoverUser :one
 UPDATE users SET
     account_status = 'active'
