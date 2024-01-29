@@ -22,6 +22,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///folder-pre-request-script-drafts.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///folder-test-script-drafts.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///pre-request-script-955d9541.js" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock:///test-script-955d9541.js" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>

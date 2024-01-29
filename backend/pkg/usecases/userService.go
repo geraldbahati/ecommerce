@@ -49,8 +49,8 @@ func (s *UserService) CreateUser(
 		Username:       username,
 		Email:          email,
 		HashedPassword: string(hashedPassword),
-		FirstName:      firstName,
-		LastName:       lastName,
+		FirstName:      strings.ToLower(firstName),
+		LastName:       strings.ToLower(lastName),
 		UserRole:       userRole,
 	}
 
