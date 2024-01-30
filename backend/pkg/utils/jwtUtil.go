@@ -20,20 +20,20 @@ type UserClaims struct {
 }
 
 // GenerateTokens generates access and refresh tokens
-func GenerateTokens(userId uuid.UUID, username string, email string, role string) (string, string, error) {
+func GenerateTokens(userId uuid.UUID, username string, email string, role string) (string, string, time.Time, error) {
 	// generate access token
 	accessToken, err := generateAccessToken(userId, username, email, role)
 	if err != nil {
-		return "", "", err
+		return "", "", time.Time{}, err
 	}
 
 	// generate refresh token
-	refreshToken, err := generateRefreshToken(userId, username, email, role)
+	refreshToken, expireTime, err := generateRefreshToken(userId, username, email, role)
 	if err != nil {
-		return "", "", err
+		return "", "", time.Time{}, err
 	}
 
-	return accessToken, refreshToken, nil
+	return accessToken, refreshToken, expireTime, nil
 }
 
 func generateAccessToken(userId uuid.UUID, username string, email string, role string) (string, error) {
@@ -57,7 +57,9 @@ func generateAccessToken(userId uuid.UUID, username string, email string, role s
 	return token.SignedString(jwtAccessSecret)
 }
 
-func generateRefreshToken(userId uuid.UUID, username string, email string, role string) (string, error) {
+func generateRefreshToken(userId uuid.UUID, username string, email string, role string) (string, time.Time, error) {
+	expireTime := time.Now().Add(24 * 90 * time.Hour) // expires in 90 days(3 months)
+
 	// create claims
 	claims := UserClaims{
 		UserId:   userId,
@@ -65,7 +67,7 @@ func generateRefreshToken(userId uuid.UUID, username string, email string, role 
 		Email:    email,
 		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * 90 * time.Hour)), // expires in 90 days(3 months)
+			ExpiresAt: jwt.NewNumericDate(expireTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Subject:   userId.String(),
 		},
@@ -75,5 +77,80 @@ func generateRefreshToken(userId uuid.UUID, username string, email string, role 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// sign token
-	return token.SignedString(jwtRefreshSecret)
+	refreshToken, err := token.SignedString(jwtRefreshSecret)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return refreshToken, expireTime, nil
+}
+
+// ParseToken parses the token and returns the claims
+func ParseToken(tokenString string, isAccessToken bool) (*UserClaims, error) {
+	var claims UserClaims
+	var jwtSecret []byte
+
+	if isAccessToken {
+		jwtSecret = jwtAccessSecret
+	} else {
+		jwtSecret = jwtRefreshSecret
+	}
+
+	// parse token
+	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// check if token is valid
+	if !token.Valid {
+		return nil, jwt.ErrSignatureInvalid
+	}
+
+	return &claims, nil
+}
+
+// RefreshToken generates a new access token
+func RefreshToken(refreshToken string) (string, error) {
+	// parse refresh token
+	claims, err := ParseToken(refreshToken, false)
+	if err != nil {
+		return "", err
+	}
+
+	// generate new access token
+	newAccessToken, err := generateAccessToken(claims.UserId, claims.Username, claims.Email, claims.Role)
+	if err != nil {
+		return "", err
+	}
+
+	return newAccessToken, nil
+}
+
+// ValidateToken validates the token
+func ValidateToken(tokenString string, isAccessToken bool) error {
+	var jwtSecret []byte
+
+	if isAccessToken {
+		jwtSecret = jwtAccessSecret
+	} else {
+		jwtSecret = jwtRefreshSecret
+	}
+
+	// parse token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil {
+		return err
+	}
+
+	// check if token is valid
+	if !token.Valid {
+		return jwt.ErrSignatureInvalid
+	}
+
+	return nil
 }

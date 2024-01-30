@@ -148,6 +148,7 @@ CREATE TABLE wishlist_items (
     UNIQUE (wishlist_id, product_id)
 );
 
+
 -- +goose Down
 DROP TABLE users;
 DROP TABLE categories;

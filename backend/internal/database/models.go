@@ -72,6 +72,15 @@ type Product struct {
 	LastUpdated  sql.NullTime
 }
 
+type RefreshToken struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Token     string
+	CreatedAt time.Time
+	ExpiresAt time.Time
+	RevokedAt sql.NullTime
+}
+
 type Review struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID

@@ -4,12 +4,13 @@ import (
 	"context"
 	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/geraldbahati/ecommerce/pkg/repository"
+	"github.com/geraldbahati/ecommerce/pkg/utils"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -95,4 +96,42 @@ func generateUsername(ctx context.Context, userRepo repository.UserRepository, f
 
 		username += suffixStr
 	}
+}
+
+// LoginUser logs in a user
+func (s *UserService) LoginUser(ctx context.Context, email string, password string) (model.LoginResponse, error) {
+	// get user by email
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	// compare password
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	// generate access token and refresh token
+	accessToken, refreshToken, expireTime, err := utils.GenerateTokens(user.ID, user.Username, user.Email, user.UserRole)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	// save refresh token
+	_, err = s.userRepo.StoreRefreshToken(ctx, user.ID, refreshToken, expireTime)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	// update last login
+	err = s.userRepo.UpdateUserLastLogin(ctx, user.ID)
+	if err != nil {
+		log.Printf("Failed to update last login for user with id %s: %v", user.ID.String(), err)
+	}
+
+	return model.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
 }

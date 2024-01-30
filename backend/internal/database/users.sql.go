@@ -8,6 +8,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -874,6 +875,39 @@ func (q *Queries) GetSuspendedUsers(ctx context.Context, arg GetSuspendedUsersPa
 	return items, nil
 }
 
+const getUserByRefreshToken = `-- name: GetUserByRefreshToken :one
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+WHERE id = (
+    SELECT user_id FROM refresh_tokens
+    WHERE token = $1
+)
+`
+
+func (q *Queries) GetUserByRefreshToken(ctx context.Context, token string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByRefreshToken, token)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.HashedPassword,
+		&i.FirstName,
+		&i.LastName,
+		&i.PhoneNumber,
+		&i.DateOfBirth,
+		&i.Gender,
+		&i.ShippingAddress,
+		&i.BillingAddress,
+		&i.CreatedAt,
+		&i.LastLogin,
+		&i.AccountStatus,
+		&i.UserRole,
+		&i.ProfilePicture,
+		&i.TwoFactorAuth,
+	)
+	return i, err
+}
+
 const partialFindUsersByUsername = `-- name: PartialFindUsersByUsername :many
 SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE username LIKE $1
@@ -1019,6 +1053,40 @@ func (q *Queries) RecoverUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.UserRole,
 		&i.ProfilePicture,
 		&i.TwoFactorAuth,
+	)
+	return i, err
+}
+
+const storeRefreshToken = `-- name: StoreRefreshToken :one
+INSERT INTO refresh_tokens (id, user_id, token, created_at, expires_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, token, created_at, expires_at, revoked_at
+`
+
+type StoreRefreshTokenParams struct {
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Token     string
+	CreatedAt time.Time
+	ExpiresAt time.Time
+}
+
+func (q *Queries) StoreRefreshToken(ctx context.Context, arg StoreRefreshTokenParams) (RefreshToken, error) {
+	row := q.db.QueryRowContext(ctx, storeRefreshToken,
+		arg.ID,
+		arg.UserID,
+		arg.Token,
+		arg.CreatedAt,
+		arg.ExpiresAt,
+	)
+	var i RefreshToken
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Token,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+		&i.RevokedAt,
 	)
 	return i, err
 }

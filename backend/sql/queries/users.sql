@@ -187,3 +187,15 @@ UPDATE users SET
     profile_picture = $2
 WHERE id = $1
 RETURNING *;
+
+-- name: StoreRefreshToken :one
+INSERT INTO refresh_tokens (id, user_id, token, created_at, expires_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+
+-- name: GetUserByRefreshToken :one
+SELECT * FROM users
+WHERE id = (
+    SELECT user_id FROM refresh_tokens
+    WHERE token = $1
+);
