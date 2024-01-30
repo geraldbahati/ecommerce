@@ -44,3 +44,27 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	// respond with user
 	RespondWithJSON(w, http.StatusOK, user)
 }
+
+func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
+	// params
+	var params struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// decode request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// login user
+	user, err := h.userService.LoginUser(r.Context(), params.Email, params.Password)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to login user: %v", err))
+		return
+	}
+
+	// respond with user
+	RespondWithJSON(w, http.StatusOK, user)
+}
