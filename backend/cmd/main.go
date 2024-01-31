@@ -48,4 +48,5 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	userRouter := r.PathPrefix("/api/users").Subrouter()
 	userRouter.HandleFunc("/register", userHandler.RegisterUser).Methods(http.MethodPost)
 	userRouter.HandleFunc("/login", userHandler.LoginUser).Methods(http.MethodPost)
+	userRouter.HandleFunc("/refresh", userHandler.RefreshToken).Methods(http.MethodPost)
 }
