@@ -13,4 +13,5 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (model.User, error)
 	StoreRefreshToken(ctx context.Context, userId uuid.UUID, refreshToken string, expiresAt time.Time) (model.RefreshToken, error)
 	UpdateUserLastLogin(ctx context.Context, userId uuid.UUID) error
+	GetUserById(ctx context.Context, userId uuid.UUID) (model.User, error)
 }

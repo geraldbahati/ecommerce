@@ -135,3 +135,17 @@ func (s *UserService) LoginUser(ctx context.Context, email string, password stri
 		RefreshToken: refreshToken,
 	}, nil
 }
+
+// RefreshToken refreshes a user's access token
+func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (model.LoginResponse, error) {
+	// generate access token
+	newAccessToken, err := utils.RefreshToken(refreshToken)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	return model.LoginResponse{
+		AccessToken:  newAccessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
