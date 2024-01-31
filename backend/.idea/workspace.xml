@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b57ce9ad-04d5-47d3-8dcb-3827a6b256f3" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/handlers/userHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/handlers/userHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/repository/sqlc/sqlUserRepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/repository/sqlc/sqlUserRepository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/repository/userRepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/repository/userRepository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/usecases/userService.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/usecases/userService.go" afterDir="false" />
-    </list>
+    <list default="true" id="b57ce9ad-04d5-47d3-8dcb-3827a6b256f3" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
