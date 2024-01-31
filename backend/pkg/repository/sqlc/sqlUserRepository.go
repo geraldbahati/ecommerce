@@ -38,23 +38,21 @@ func (r *SQLUserRepository) CreateUser(ctx context.Context, user model.UserRegis
 
 	// return created user
 	return model.User{
-		ID:              createdUser.ID,
-		Username:        createdUser.Username,
-		Email:           createdUser.Email,
-		HashedPassword:  createdUser.HashedPassword,
-		FirstName:       createdUser.FirstName,
-		LastName:        createdUser.LastName,
-		PhoneNumber:     createdUser.PhoneNumber,
-		DateOfBirth:     createdUser.DateOfBirth,
-		Gender:          createdUser.Gender,
-		ShippingAddress: createdUser.ShippingAddress,
-		BillingAddress:  createdUser.BillingAddress,
-		CreatedAt:       createdUser.CreatedAt,
-		LastLogin:       createdUser.LastLogin,
-		AccountStatus:   createdUser.AccountStatus,
-		UserRole:        createdUser.UserRole,
-		ProfilePicture:  createdUser.ProfilePicture,
-		TwoFactorAuth:   createdUser.TwoFactorAuth,
+		ID:             createdUser.ID,
+		Username:       createdUser.Username,
+		Email:          createdUser.Email,
+		HashedPassword: createdUser.HashedPassword,
+		FirstName:      createdUser.FirstName,
+		LastName:       createdUser.LastName,
+		PhoneNumber:    createdUser.PhoneNumber,
+		DateOfBirth:    createdUser.DateOfBirth,
+		Gender:         createdUser.Gender,
+		CreatedAt:      createdUser.CreatedAt,
+		LastLogin:      createdUser.LastLogin,
+		AccountStatus:  createdUser.AccountStatus,
+		UserRole:       createdUser.UserRole,
+		ProfilePicture: createdUser.ProfilePicture,
+		TwoFactorAuth:  createdUser.TwoFactorAuth,
 	}, nil
 }
 
@@ -73,23 +71,21 @@ func (r *SQLUserRepository) GetUserByEmail(ctx context.Context, email string) (m
 
 	// return user
 	return model.User{
-		ID:              user.ID,
-		Username:        user.Username,
-		Email:           user.Email,
-		HashedPassword:  user.HashedPassword,
-		FirstName:       user.FirstName,
-		LastName:        user.LastName,
-		PhoneNumber:     user.PhoneNumber,
-		DateOfBirth:     user.DateOfBirth,
-		Gender:          user.Gender,
-		ShippingAddress: user.ShippingAddress,
-		BillingAddress:  user.BillingAddress,
-		CreatedAt:       user.CreatedAt,
-		LastLogin:       user.LastLogin,
-		AccountStatus:   user.AccountStatus,
-		UserRole:        user.UserRole,
-		ProfilePicture:  user.ProfilePicture,
-		TwoFactorAuth:   user.TwoFactorAuth,
+		ID:             user.ID,
+		Username:       user.Username,
+		Email:          user.Email,
+		HashedPassword: user.HashedPassword,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		PhoneNumber:    user.PhoneNumber,
+		DateOfBirth:    user.DateOfBirth,
+		Gender:         user.Gender,
+		CreatedAt:      user.CreatedAt,
+		LastLogin:      user.LastLogin,
+		AccountStatus:  user.AccountStatus,
+		UserRole:       user.UserRole,
+		ProfilePicture: user.ProfilePicture,
+		TwoFactorAuth:  user.TwoFactorAuth,
 	}, nil
 }
 
@@ -145,22 +141,60 @@ func (r *SQLUserRepository) GetUserById(ctx context.Context, userId uuid.UUID) (
 
 	// return user
 	return model.User{
-		ID:              user.ID,
-		Username:        user.Username,
-		Email:           user.Email,
-		HashedPassword:  user.HashedPassword,
-		FirstName:       user.FirstName,
-		LastName:        user.LastName,
-		PhoneNumber:     user.PhoneNumber,
-		DateOfBirth:     user.DateOfBirth,
-		Gender:          user.Gender,
-		ShippingAddress: user.ShippingAddress,
-		BillingAddress:  user.BillingAddress,
-		CreatedAt:       user.CreatedAt,
-		LastLogin:       user.LastLogin,
-		AccountStatus:   user.AccountStatus,
-		UserRole:        user.UserRole,
-		ProfilePicture:  user.ProfilePicture,
-		TwoFactorAuth:   user.TwoFactorAuth,
+		ID:             user.ID,
+		Username:       user.Username,
+		Email:          user.Email,
+		HashedPassword: user.HashedPassword,
+		FirstName:      user.FirstName,
+		LastName:       user.LastName,
+		PhoneNumber:    user.PhoneNumber,
+		DateOfBirth:    user.DateOfBirth,
+		Gender:         user.Gender,
+		CreatedAt:      user.CreatedAt,
+		LastLogin:      user.LastLogin,
+		AccountStatus:  user.AccountStatus,
+		UserRole:       user.UserRole,
+		ProfilePicture: user.ProfilePicture,
+		TwoFactorAuth:  user.TwoFactorAuth,
+	}, nil
+}
+
+// UpdateUser updates a user
+func (r *SQLUserRepository) UpdateUser(ctx context.Context, user model.User) (model.User, error) {
+	log.Printf("Updating user with id %s", user.ID.String())
+
+	// update user
+	updatedUser, err := r.DB.UpdateUser(ctx, database.UpdateUserParams{
+		ID:          user.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		PhoneNumber: user.PhoneNumber,
+		DateOfBirth: user.DateOfBirth,
+		Gender:      user.Gender,
+	})
+	if err != nil {
+		log.Printf("Error updating user with id %s: %s", user.ID.String(), err.Error())
+		return model.User{}, err
+	}
+
+	// return updated user
+	return model.User{
+		ID:             updatedUser.ID,
+		Username:       updatedUser.Username,
+		Email:          updatedUser.Email,
+		HashedPassword: updatedUser.HashedPassword,
+		FirstName:      updatedUser.FirstName,
+		LastName:       updatedUser.LastName,
+		PhoneNumber:    updatedUser.PhoneNumber,
+		DateOfBirth:    updatedUser.DateOfBirth,
+		Gender:         updatedUser.Gender,
+		CreatedAt:      updatedUser.CreatedAt,
+		LastLogin:      updatedUser.LastLogin,
+		AccountStatus:  updatedUser.AccountStatus,
+		UserRole:       updatedUser.UserRole,
+		ProfilePicture: updatedUser.ProfilePicture,
+		TwoFactorAuth:  updatedUser.TwoFactorAuth,
 	}, nil
 }

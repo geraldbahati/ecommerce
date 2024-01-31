@@ -17,7 +17,7 @@ const activateUser = `-- name: ActivateUser :one
 UPDATE users SET
     account_status = 'active'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -33,8 +33,6 @@ func (q *Queries) ActivateUser(ctx context.Context, id uuid.UUID) (User, error) 
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -155,7 +153,7 @@ func (q *Queries) CountSuspendedUsers(ctx context.Context) (int64, error) {
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, email, hashed_password, username, first_name, last_name, user_role)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 type CreateUserParams struct {
@@ -189,8 +187,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -205,7 +201,7 @@ const deactivateUser = `-- name: DeactivateUser :one
 UPDATE users SET
     account_status = 'inactive'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -221,8 +217,6 @@ func (q *Queries) DeactivateUser(ctx context.Context, id uuid.UUID) (User, error
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -248,7 +242,7 @@ const demoteUserToCustomer = `-- name: DemoteUserToCustomer :one
 UPDATE users SET
     user_role = 'customer'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) DemoteUserToCustomer(ctx context.Context, id uuid.UUID) (User, error) {
@@ -264,8 +258,6 @@ func (q *Queries) DemoteUserToCustomer(ctx context.Context, id uuid.UUID) (User,
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -280,7 +272,7 @@ const disableTwoFactorAuth = `-- name: DisableTwoFactorAuth :one
 UPDATE users SET
     two_factor_auth = FALSE
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) DisableTwoFactorAuth(ctx context.Context, id uuid.UUID) (User, error) {
@@ -296,8 +288,6 @@ func (q *Queries) DisableTwoFactorAuth(ctx context.Context, id uuid.UUID) (User,
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -312,7 +302,7 @@ const enableTwoFactorAuth = `-- name: EnableTwoFactorAuth :one
 UPDATE users SET
     two_factor_auth = TRUE
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) EnableTwoFactorAuth(ctx context.Context, id uuid.UUID) (User, error) {
@@ -328,8 +318,6 @@ func (q *Queries) EnableTwoFactorAuth(ctx context.Context, id uuid.UUID) (User, 
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -341,7 +329,7 @@ func (q *Queries) EnableTwoFactorAuth(ctx context.Context, id uuid.UUID) (User, 
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE email = $1
 `
 
@@ -358,8 +346,6 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -371,7 +357,7 @@ func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, erro
 }
 
 const findUserByID = `-- name: FindUserByID :one
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE id = $1
 `
 
@@ -388,8 +374,6 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (User, error) 
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -401,7 +385,7 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (User, error) 
 }
 
 const findUserByPassword = `-- name: FindUserByPassword :one
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE hashed_password = $1
 `
 
@@ -418,8 +402,6 @@ func (q *Queries) FindUserByPassword(ctx context.Context, hashedPassword string)
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -431,7 +413,7 @@ func (q *Queries) FindUserByPassword(ctx context.Context, hashedPassword string)
 }
 
 const findUserByUsername = `-- name: FindUserByUsername :one
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE username = $1
 `
 
@@ -448,8 +430,6 @@ func (q *Queries) FindUserByUsername(ctx context.Context, username string) (User
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -461,7 +441,7 @@ func (q *Queries) FindUserByUsername(ctx context.Context, username string) (User
 }
 
 const getActiveUsers = `-- name: GetActiveUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE account_status = 'active'
 LIMIT $1 OFFSET $2
 `
@@ -490,8 +470,6 @@ func (q *Queries) GetActiveUsers(ctx context.Context, arg GetActiveUsersParams) 
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -513,7 +491,7 @@ func (q *Queries) GetActiveUsers(ctx context.Context, arg GetActiveUsersParams) 
 }
 
 const getAdminUsers = `-- name: GetAdminUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE user_role = 'admin'
 LIMIT $1 OFFSET $2
 `
@@ -542,8 +520,6 @@ func (q *Queries) GetAdminUsers(ctx context.Context, arg GetAdminUsersParams) ([
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -565,7 +541,7 @@ func (q *Queries) GetAdminUsers(ctx context.Context, arg GetAdminUsersParams) ([
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 LIMIT $1 OFFSET $2
 `
 
@@ -593,8 +569,6 @@ func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]Use
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -616,7 +590,7 @@ func (q *Queries) GetAllUsers(ctx context.Context, arg GetAllUsersParams) ([]Use
 }
 
 const getCustomers = `-- name: GetCustomers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE user_role = 'customer'
 LIMIT $1 OFFSET $2
 `
@@ -645,8 +619,6 @@ func (q *Queries) GetCustomers(ctx context.Context, arg GetCustomersParams) ([]U
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -668,7 +640,7 @@ func (q *Queries) GetCustomers(ctx context.Context, arg GetCustomersParams) ([]U
 }
 
 const getDeletedUsers = `-- name: GetDeletedUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE account_status = 'deleted'
 LIMIT $1 OFFSET $2
 `
@@ -697,8 +669,6 @@ func (q *Queries) GetDeletedUsers(ctx context.Context, arg GetDeletedUsersParams
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -720,7 +690,7 @@ func (q *Queries) GetDeletedUsers(ctx context.Context, arg GetDeletedUsersParams
 }
 
 const getInactiveUsers = `-- name: GetInactiveUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE account_status = 'inactive'
 LIMIT $1 OFFSET $2
 `
@@ -749,8 +719,6 @@ func (q *Queries) GetInactiveUsers(ctx context.Context, arg GetInactiveUsersPara
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -771,8 +739,27 @@ func (q *Queries) GetInactiveUsers(ctx context.Context, arg GetInactiveUsersPara
 	return items, nil
 }
 
+const getRefreshTokenByUserID = `-- name: GetRefreshTokenByUserID :one
+SELECT id, user_id, token, created_at, expires_at, revoked_at FROM refresh_tokens
+WHERE user_id = $1
+`
+
+func (q *Queries) GetRefreshTokenByUserID(ctx context.Context, userID uuid.UUID) (RefreshToken, error) {
+	row := q.db.QueryRowContext(ctx, getRefreshTokenByUserID, userID)
+	var i RefreshToken
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Token,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+		&i.RevokedAt,
+	)
+	return i, err
+}
+
 const getSuperAdminUsers = `-- name: GetSuperAdminUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE user_role = 'superadmin'
 LIMIT $1 OFFSET $2
 `
@@ -801,8 +788,6 @@ func (q *Queries) GetSuperAdminUsers(ctx context.Context, arg GetSuperAdminUsers
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -824,7 +809,7 @@ func (q *Queries) GetSuperAdminUsers(ctx context.Context, arg GetSuperAdminUsers
 }
 
 const getSuspendedUsers = `-- name: GetSuspendedUsers :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE account_status = 'suspended'
 LIMIT $1 OFFSET $2
 `
@@ -853,8 +838,6 @@ func (q *Queries) GetSuspendedUsers(ctx context.Context, arg GetSuspendedUsersPa
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -876,7 +859,7 @@ func (q *Queries) GetSuspendedUsers(ctx context.Context, arg GetSuspendedUsersPa
 }
 
 const getUserByRefreshToken = `-- name: GetUserByRefreshToken :one
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE id = (
     SELECT user_id FROM refresh_tokens
     WHERE token = $1
@@ -896,8 +879,6 @@ func (q *Queries) GetUserByRefreshToken(ctx context.Context, token string) (User
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -909,7 +890,7 @@ func (q *Queries) GetUserByRefreshToken(ctx context.Context, token string) (User
 }
 
 const partialFindUsersByUsername = `-- name: PartialFindUsersByUsername :many
-SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
+SELECT id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth FROM users
 WHERE username LIKE $1
 LIMIT $2 OFFSET $3
 `
@@ -939,8 +920,6 @@ func (q *Queries) PartialFindUsersByUsername(ctx context.Context, arg PartialFin
 			&i.PhoneNumber,
 			&i.DateOfBirth,
 			&i.Gender,
-			&i.ShippingAddress,
-			&i.BillingAddress,
 			&i.CreatedAt,
 			&i.LastLogin,
 			&i.AccountStatus,
@@ -965,7 +944,7 @@ const promoteUserToAdmin = `-- name: PromoteUserToAdmin :one
 UPDATE users SET
     user_role = 'admin'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) PromoteUserToAdmin(ctx context.Context, id uuid.UUID) (User, error) {
@@ -981,8 +960,6 @@ func (q *Queries) PromoteUserToAdmin(ctx context.Context, id uuid.UUID) (User, e
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -997,7 +974,7 @@ const promoteUserToSuperAdmin = `-- name: PromoteUserToSuperAdmin :one
 UPDATE users SET
     user_role = 'superadmin'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) PromoteUserToSuperAdmin(ctx context.Context, id uuid.UUID) (User, error) {
@@ -1013,8 +990,6 @@ func (q *Queries) PromoteUserToSuperAdmin(ctx context.Context, id uuid.UUID) (Us
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -1029,7 +1004,7 @@ const recoverUser = `-- name: RecoverUser :one
 UPDATE users SET
     account_status = 'active'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) RecoverUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -1045,8 +1020,6 @@ func (q *Queries) RecoverUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -1095,7 +1068,7 @@ const suspendUser = `-- name: SuspendUser :one
 UPDATE users SET
     account_status = 'suspended'
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 func (q *Queries) SuspendUser(ctx context.Context, id uuid.UUID) (User, error) {
@@ -1111,8 +1084,6 @@ func (q *Queries) SuspendUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -1131,24 +1102,20 @@ UPDATE users SET
     last_name = $5,
     phone_number = $6,
     date_of_birth = $7,
-    gender = $8,
-    shipping_address = $9,
-    billing_address = $10
+    gender = $8
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 type UpdateUserParams struct {
-	ID              uuid.UUID
-	Username        string
-	Email           string
-	FirstName       string
-	LastName        string
-	PhoneNumber     sql.NullString
-	DateOfBirth     sql.NullTime
-	Gender          sql.NullString
-	ShippingAddress sql.NullString
-	BillingAddress  sql.NullString
+	ID          uuid.UUID
+	Username    string
+	Email       string
+	FirstName   string
+	LastName    string
+	PhoneNumber sql.NullString
+	DateOfBirth sql.NullTime
+	Gender      sql.NullString
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -1161,8 +1128,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.PhoneNumber,
 		arg.DateOfBirth,
 		arg.Gender,
-		arg.ShippingAddress,
-		arg.BillingAddress,
 	)
 	var i User
 	err := row.Scan(
@@ -1175,8 +1140,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -1207,7 +1170,7 @@ const updateUserPassword = `-- name: UpdateUserPassword :one
 UPDATE users SET
     hashed_password = $2
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 type UpdateUserPasswordParams struct {
@@ -1228,8 +1191,6 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
@@ -1244,7 +1205,7 @@ const updateUserProfilePicture = `-- name: UpdateUserProfilePicture :one
 UPDATE users SET
     profile_picture = $2
 WHERE id = $1
-RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, shipping_address, billing_address, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
+RETURNING id, username, email, hashed_password, first_name, last_name, phone_number, date_of_birth, gender, created_at, last_login, account_status, user_role, profile_picture, two_factor_auth
 `
 
 type UpdateUserProfilePictureParams struct {
@@ -1265,8 +1226,6 @@ func (q *Queries) UpdateUserProfilePicture(ctx context.Context, arg UpdateUserPr
 		&i.PhoneNumber,
 		&i.DateOfBirth,
 		&i.Gender,
-		&i.ShippingAddress,
-		&i.BillingAddress,
 		&i.CreatedAt,
 		&i.LastLogin,
 		&i.AccountStatus,
