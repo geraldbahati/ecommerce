@@ -11,9 +11,7 @@ UPDATE users SET
     last_name = $5,
     phone_number = $6,
     date_of_birth = $7,
-    gender = $8,
-    shipping_address = $9,
-    billing_address = $10
+    gender = $8
 WHERE id = $1
 RETURNING *;
 

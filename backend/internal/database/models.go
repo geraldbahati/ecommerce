@@ -11,6 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type BillingAddress struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	Street     string
+	City       string
+	State      string
+	Country    string
+	PostalCode string
+}
+
 type CartItem struct {
 	ID             uuid.UUID
 	ShoppingCartID uuid.UUID
@@ -91,6 +101,16 @@ type Review struct {
 	LastUpdated sql.NullTime
 }
 
+type ShippingAddress struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	Street     string
+	City       string
+	State      string
+	Country    string
+	PostalCode string
+}
+
 type ShoppingCart struct {
 	ID          uuid.UUID
 	UserID      uuid.UUID
@@ -101,23 +121,21 @@ type ShoppingCart struct {
 }
 
 type User struct {
-	ID              uuid.UUID
-	Username        string
-	Email           string
-	HashedPassword  string
-	FirstName       string
-	LastName        string
-	PhoneNumber     sql.NullString
-	DateOfBirth     sql.NullTime
-	Gender          sql.NullString
-	ShippingAddress sql.NullString
-	BillingAddress  sql.NullString
-	CreatedAt       time.Time
-	LastLogin       sql.NullTime
-	AccountStatus   string
-	UserRole        string
-	ProfilePicture  sql.NullString
-	TwoFactorAuth   bool
+	ID             uuid.UUID
+	Username       string
+	Email          string
+	HashedPassword string
+	FirstName      string
+	LastName       string
+	PhoneNumber    sql.NullString
+	DateOfBirth    sql.NullTime
+	Gender         sql.NullString
+	CreatedAt      time.Time
+	LastLogin      sql.NullTime
+	AccountStatus  string
+	UserRole       string
+	ProfilePicture sql.NullString
+	TwoFactorAuth  bool
 }
 
 type Wishlist struct {
