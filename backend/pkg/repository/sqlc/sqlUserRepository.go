@@ -134,3 +134,33 @@ func (r *SQLUserRepository) UpdateUserLastLogin(ctx context.Context, userId uuid
 	}
 	return err
 }
+
+// GetUserById returns the user with the given id
+func (r *SQLUserRepository) GetUserById(ctx context.Context, userId uuid.UUID) (model.User, error) {
+	// get user from database
+	user, err := r.DB.FindUserByID(ctx, userId)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	// return user
+	return model.User{
+		ID:              user.ID,
+		Username:        user.Username,
+		Email:           user.Email,
+		HashedPassword:  user.HashedPassword,
+		FirstName:       user.FirstName,
+		LastName:        user.LastName,
+		PhoneNumber:     user.PhoneNumber,
+		DateOfBirth:     user.DateOfBirth,
+		Gender:          user.Gender,
+		ShippingAddress: user.ShippingAddress,
+		BillingAddress:  user.BillingAddress,
+		CreatedAt:       user.CreatedAt,
+		LastLogin:       user.LastLogin,
+		AccountStatus:   user.AccountStatus,
+		UserRole:        user.UserRole,
+		ProfilePicture:  user.ProfilePicture,
+		TwoFactorAuth:   user.TwoFactorAuth,
+	}, nil
+}

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"time"
@@ -98,10 +100,15 @@ func ParseToken(tokenString string, isAccessToken bool) (*UserClaims, error) {
 
 	// parse token
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
 		return jwtSecret, nil
 	})
+
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing token: %w", err)
 	}
 
 	// check if token is valid
@@ -118,6 +125,11 @@ func RefreshToken(refreshToken string) (string, error) {
 	claims, err := ParseToken(refreshToken, false)
 	if err != nil {
 		return "", err
+	}
+
+	// validate
+	if claims.UserId.String() == "" || claims.Username == "" || claims.Email == "" || claims.Role == "" {
+		return "", errors.New("invalid token claims")
 	}
 
 	// generate new access token
@@ -153,4 +165,38 @@ func ValidateToken(tokenString string, isAccessToken bool) error {
 	}
 
 	return nil
+}
+
+// IsTokenExpired checks if the token is expired
+func IsTokenExpired(tokenString string, isAccessToken bool) bool {
+	var jwtSecret []byte
+
+	if isAccessToken {
+		jwtSecret = jwtAccessSecret
+	} else {
+		jwtSecret = jwtRefreshSecret
+	}
+
+	// parse token
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil {
+		return true
+	}
+
+	// check if token is valid
+	if !token.Valid {
+		return true
+	}
+
+	// check if token is expired
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		exp := claims["exp"].(float64)
+		if time.Now().Unix() > int64(exp) {
+			return true
+		}
+	}
+
+	return false
 }

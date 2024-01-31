@@ -193,6 +193,11 @@ INSERT INTO refresh_tokens (id, user_id, token, created_at, expires_at)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
+-- name: GetRefreshTokenByUserID :one
+SELECT * FROM refresh_tokens
+WHERE user_id = $1;
+
+
 -- name: GetUserByRefreshToken :one
 SELECT * FROM users
 WHERE id = (

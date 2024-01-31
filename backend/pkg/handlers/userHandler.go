@@ -68,3 +68,26 @@ func (h *UserHandler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	// respond with user
 	RespondWithJSON(w, http.StatusOK, user)
 }
+
+func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	// params
+	var params struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	// decode request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// refresh token
+	user, err := h.userService.RefreshToken(r.Context(), params.RefreshToken)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to refresh token: %v", err))
+		return
+	}
+
+	// respond with user
+	RespondWithJSON(w, http.StatusOK, user)
+}
