@@ -53,4 +53,5 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	protectedUserRouter := userRouter.PathPrefix("").Subrouter()
 	protectedUserRouter.Use(middleware.Auth)
 	protectedUserRouter.HandleFunc("/update", userHandler.UpdateUser).Methods(http.MethodPut)
+	protectedUserRouter.HandleFunc("/update-profile-picture", userHandler.UpdateProfilePicture).Methods(http.MethodPut)
 }

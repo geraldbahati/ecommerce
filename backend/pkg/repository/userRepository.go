@@ -15,6 +15,7 @@ type UserRepository interface {
 	StoreRefreshToken(ctx context.Context, userId uuid.UUID, refreshToken string, expiresAt time.Time) (model.RefreshToken, error)
 	UpdateUserLastLogin(ctx context.Context, userId uuid.UUID) error
 	UpdateUser(ctx context.Context, user model.User) (model.User, error)
+	UpdateUserProfilePicture(ctx context.Context, user model.User) (model.User, error)
 
 	// delete
 

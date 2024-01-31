@@ -120,3 +120,26 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// respond with user
 	RespondWithJSON(w, http.StatusOK, user)
 }
+
+func (h *UserHandler) UpdateProfilePicture(w http.ResponseWriter, r *http.Request) {
+	// params
+	var params struct {
+		ProfilePicture string `json:"profile_picture"`
+	}
+
+	// decode request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// update user
+	user, err := h.userService.UpdateProfilePicture(r.Context(), params.ProfilePicture)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update profile picture: %v", err))
+		return
+	}
+
+	// respond with user
+	RespondWithJSON(w, http.StatusOK, user)
+}

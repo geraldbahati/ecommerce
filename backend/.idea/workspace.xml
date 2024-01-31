@@ -5,22 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b57ce9ad-04d5-47d3-8dcb-3827a6b256f3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/sql/schema/0007_alter_users.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/JetClient/state.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/JetClient/state.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/0bde785f-b64f-4294-b943-c9dee2eda724.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/0bde785f-b64f-4294-b943-c9dee2eda724.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/0bde785f-b64f-4294-b943-c9dee2eda724/storage_v2/_src_/database/ecommerce.QLYXWw/schema/public.abK9xQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/0bde785f-b64f-4294-b943-c9dee2eda724/storage_v2/_src_/database/ecommerce.QLYXWw/schema/public.abK9xQ.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/database/models.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/database/models.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/database/users.sql.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/database/users.sql.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/handlers/userHandler.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/handlers/userHandler.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pkg/model/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/model/user.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/repository/sqlc/sqlUserRepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/repository/sqlc/sqlUserRepository.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/repository/userRepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/repository/userRepository.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pkg/usecases/userService.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/usecases/userService.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql/queries/users.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sql/queries/users.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

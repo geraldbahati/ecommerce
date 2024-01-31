@@ -203,3 +203,19 @@ func (s *UserService) UpdateUser(
 
 	return s.userRepo.UpdateUser(ctx, user)
 }
+
+// UpdateProfilePicture updates a user's profile picture
+func (s *UserService) UpdateProfilePicture(ctx context.Context, profilePicture string) (model.User, error) {
+	// get user
+	userId := ctx.Value("userId").(uuid.UUID)
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	// update user
+	profilePictureValue := sql.NullString{String: profilePicture, Valid: profilePicture != ""}
+	user.ProfilePicture = profilePictureValue
+
+	return s.userRepo.UpdateUserProfilePicture(ctx, user)
+}

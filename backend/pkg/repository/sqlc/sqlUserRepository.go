@@ -198,3 +198,37 @@ func (r *SQLUserRepository) UpdateUser(ctx context.Context, user model.User) (mo
 		TwoFactorAuth:  updatedUser.TwoFactorAuth,
 	}, nil
 }
+
+// UpdateUserProfilePicture updates the profile picture of a user
+func (r *SQLUserRepository) UpdateUserProfilePicture(ctx context.Context, user model.User) (model.User, error) {
+	log.Printf("Updating profile picture of user with id %s", user.ID.String())
+
+	// update user
+	updatedUser, err := r.DB.UpdateUserProfilePicture(ctx, database.UpdateUserProfilePictureParams{
+		ID:             user.ID,
+		ProfilePicture: user.ProfilePicture,
+	})
+	if err != nil {
+		log.Printf("Error updating profile picture of user with id %s: %s", user.ID.String(), err.Error())
+		return model.User{}, err
+	}
+
+	// return updated user
+	return model.User{
+		ID:             updatedUser.ID,
+		Username:       updatedUser.Username,
+		Email:          updatedUser.Email,
+		HashedPassword: updatedUser.HashedPassword,
+		FirstName:      updatedUser.FirstName,
+		LastName:       updatedUser.LastName,
+		PhoneNumber:    updatedUser.PhoneNumber,
+		DateOfBirth:    updatedUser.DateOfBirth,
+		Gender:         updatedUser.Gender,
+		CreatedAt:      updatedUser.CreatedAt,
+		LastLogin:      updatedUser.LastLogin,
+		AccountStatus:  updatedUser.AccountStatus,
+		UserRole:       updatedUser.UserRole,
+		ProfilePicture: updatedUser.ProfilePicture,
+		TwoFactorAuth:  updatedUser.TwoFactorAuth,
+	}, nil
+}
