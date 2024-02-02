@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/geraldbahati/ecommerce/pkg/repository"
 	"github.com/geraldbahati/ecommerce/pkg/utils"
@@ -218,4 +219,21 @@ func (s *UserService) UpdateProfilePicture(ctx context.Context, profilePicture s
 	user.ProfilePicture = profilePictureValue
 
 	return s.userRepo.UpdateUserProfilePicture(ctx, user)
+}
+
+// SendResetPasswordEmail sends a reset password email to the user
+func (s *UserService) SendResetPasswordEmail(ctx context.Context, email string) error {
+	// get user
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	// check if valid user
+	if user.ID == uuid.Nil {
+		return errors.New("invalid user")
+	}
+
+	// send reset password email
+	return utils.SendResetPasswordEmail(user.ID, user.Email)
 }
