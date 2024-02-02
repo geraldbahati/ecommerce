@@ -2,6 +2,8 @@ package usecases
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/geraldbahati/ecommerce/pkg/repository"
 	"github.com/geraldbahati/ecommerce/pkg/utils"
@@ -11,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type UserService struct {
@@ -148,4 +151,91 @@ func (s *UserService) RefreshToken(ctx context.Context, refreshToken string) (mo
 		AccessToken:  newAccessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+// UpdateUser updates a user
+func (s *UserService) UpdateUser(
+	ctx context.Context,
+	email string,
+	firstName string,
+	lastName string,
+	phoneNumber string,
+	gender string,
+	dateOfBirth string,
+) (model.User, error) {
+	// get user
+	userId := ctx.Value("userId").(uuid.UUID)
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	// update user
+	if email != "" {
+		user.Email = email
+	}
+
+	if firstName != "" {
+		user.FirstName = firstName
+	}
+
+	if lastName != "" {
+		user.LastName = lastName
+	}
+
+	if phoneNumber != "" {
+		phoneNumberValue := sql.NullString{String: phoneNumber, Valid: phoneNumber != ""}
+		user.PhoneNumber = phoneNumberValue
+	}
+
+	if gender != "" {
+		genderValue := sql.NullString{String: gender, Valid: gender != ""}
+		user.Gender = genderValue
+	}
+
+	if dateOfBirth != "" {
+		dateOfBirthDate, err := time.Parse("02-01-2006", dateOfBirth)
+		if err != nil {
+			dateOfBirthDate = time.Time{}
+		}
+		dateOfBirthValue := sql.NullTime{Time: dateOfBirthDate, Valid: dateOfBirthDate != time.Time{}}
+		user.DateOfBirth = dateOfBirthValue
+	}
+
+	return s.userRepo.UpdateUser(ctx, user)
+}
+
+// UpdateProfilePicture updates a user's profile picture
+func (s *UserService) UpdateProfilePicture(ctx context.Context, profilePicture string) (model.User, error) {
+	// get user
+	userId := ctx.Value("userId").(uuid.UUID)
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	// update user
+	profilePictureValue := sql.NullString{String: profilePicture, Valid: profilePicture != ""}
+	user.ProfilePicture = profilePictureValue
+
+	return s.userRepo.UpdateUserProfilePicture(ctx, user)
+}
+
+// SendResetPasswordEmail sends a reset password email to the user
+func (s *UserService) SendResetPasswordEmail(ctx context.Context) error {
+	// get id from context
+	userId := ctx.Value("userId").(uuid.UUID)
+	// get user
+	user, err := s.userRepo.GetUserById(ctx, userId)
+	if err != nil {
+		return err
+	}
+
+	// check if valid user
+	if user.ID == uuid.Nil {
+		return errors.New("invalid user")
+	}
+
+	// send reset password email
+	return utils.SendResetPasswordEmail(user.ID, user.Email)
 }

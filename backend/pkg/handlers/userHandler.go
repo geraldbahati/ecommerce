@@ -91,3 +91,66 @@ func (h *UserHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	// respond with user
 	RespondWithJSON(w, http.StatusOK, user)
 }
+
+func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	// params
+	var params struct {
+		Email       string `json:"email"`
+		FirstName   string `json:"first_name"`
+		LastName    string `json:"last_name"`
+		PhoneNumber string `json:"phone_number"`
+		DateOfBirth string `json:"date_of_birth"`
+		Gender      string `json:"gender"`
+	}
+
+	// decode request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// update user
+	user, err := h.userService.UpdateUser(r.Context(), params.Email, params.FirstName, params.LastName,
+		params.PhoneNumber, params.Gender, params.DateOfBirth)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update user: %v", err))
+		return
+	}
+
+	// respond with user
+	RespondWithJSON(w, http.StatusOK, user)
+}
+
+func (h *UserHandler) UpdateProfilePicture(w http.ResponseWriter, r *http.Request) {
+	// params
+	var params struct {
+		ProfilePicture string `json:"profile_picture"`
+	}
+
+	// decode request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// update user
+	user, err := h.userService.UpdateProfilePicture(r.Context(), params.ProfilePicture)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update profile picture: %v", err))
+		return
+	}
+
+	// respond with user
+	RespondWithJSON(w, http.StatusOK, user)
+}
+
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	// send reset password email
+	if err := h.userService.SendResetPasswordEmail(r.Context()); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to send reset password email: %v", err))
+		return
+	}
+
+	// respond with success message
+	RespondWithSuccess(w, http.StatusOK, "Reset password email sent successfully")
+}
