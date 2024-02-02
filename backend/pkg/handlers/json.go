@@ -30,3 +30,11 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.WriteHeader(code)
 	w.Write(response)
 }
+
+func RespondWithSuccess(w http.ResponseWriter, code int, message string) {
+	type successResponse struct {
+		Message string `json:"message"`
+	}
+
+	RespondWithJSON(w, code, successResponse{Message: message})
+}

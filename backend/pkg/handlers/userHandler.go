@@ -143,3 +143,14 @@ func (h *UserHandler) UpdateProfilePicture(w http.ResponseWriter, r *http.Reques
 	// respond with user
 	RespondWithJSON(w, http.StatusOK, user)
 }
+
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	// send reset password email
+	if err := h.userService.SendResetPasswordEmail(r.Context()); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to send reset password email: %v", err))
+		return
+	}
+
+	// respond with success message
+	RespondWithSuccess(w, http.StatusOK, "Reset password email sent successfully")
+}
