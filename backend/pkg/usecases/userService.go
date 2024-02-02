@@ -222,9 +222,11 @@ func (s *UserService) UpdateProfilePicture(ctx context.Context, profilePicture s
 }
 
 // SendResetPasswordEmail sends a reset password email to the user
-func (s *UserService) SendResetPasswordEmail(ctx context.Context, email string) error {
+func (s *UserService) SendResetPasswordEmail(ctx context.Context) error {
+	// get id from context
+	userId := ctx.Value("userId").(uuid.UUID)
 	// get user
-	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	user, err := s.userRepo.GetUserById(ctx, userId)
 	if err != nil {
 		return err
 	}

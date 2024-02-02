@@ -77,7 +77,7 @@ func sendEmail(email string, resetPasswordLink string) error {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 	smtpEmail := "journeytoharvard@gmail.com"
-	smtpPassword := "GBahati@12"
+	smtpPassword := "wdib qixk yomq mmpt"
 
 	// email header
 	headers := []string{
