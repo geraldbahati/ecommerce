@@ -16,6 +16,7 @@ type UserRepository interface {
 	UpdateUserLastLogin(ctx context.Context, userId uuid.UUID) error
 	UpdateUser(ctx context.Context, user model.User) (model.User, error)
 	UpdateUserProfilePicture(ctx context.Context, user model.User) (model.User, error)
+	UpdateUserPassword(ctx context.Context, userId uuid.UUID, newPassword string) error
 
 	// delete
 
