@@ -45,6 +45,10 @@ func main() {
 }
 
 func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
+	resetPasswordRouter := r.PathPrefix("/reset-password").Subrouter()
+	resetPasswordRouter.HandleFunc("", userHandler.ResetPassword).Methods(http.MethodGet)
+	resetPasswordRouter.HandleFunc("", userHandler.ResetPassword).Methods(http.MethodPost)
+
 	userRouter := r.PathPrefix("/api/users").Subrouter()
 	userRouter.HandleFunc("/register", userHandler.RegisterUser).Methods(http.MethodPost)
 	userRouter.HandleFunc("/login", userHandler.LoginUser).Methods(http.MethodPost)
@@ -54,5 +58,5 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	protectedUserRouter.Use(middleware.Auth)
 	protectedUserRouter.HandleFunc("/update", userHandler.UpdateUser).Methods(http.MethodPut)
 	protectedUserRouter.HandleFunc("/update-profile-picture", userHandler.UpdateProfilePicture).Methods(http.MethodPut)
-	protectedUserRouter.HandleFunc("/reset-password", userHandler.ResetPassword).Methods(http.MethodPut)
+	protectedUserRouter.HandleFunc("/reset-password", userHandler.RequestPasswordReset).Methods(http.MethodPut)
 }
