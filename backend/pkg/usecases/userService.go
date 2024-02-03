@@ -222,11 +222,9 @@ func (s *UserService) UpdateProfilePicture(ctx context.Context, profilePicture s
 }
 
 // SendResetPasswordEmail sends a reset password email to the user
-func (s *UserService) SendResetPasswordEmail(ctx context.Context) error {
-	// get id from context
-	userId := ctx.Value("userId").(uuid.UUID)
-	// get user
-	user, err := s.userRepo.GetUserById(ctx, userId)
+func (s *UserService) SendResetPasswordEmail(ctx context.Context, email string) error {
+	// get user by email
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -238,4 +236,35 @@ func (s *UserService) SendResetPasswordEmail(ctx context.Context) error {
 
 	// send reset password email
 	return utils.SendResetPasswordEmail(user.ID, user.Email)
+}
+
+// ResetPassword resets a user's password
+func (s *UserService) ResetPassword(ctx context.Context, token string, newPassword string) error {
+	// verify reset password token
+	userId, err := utils.VerifyResetPasswordToken(token)
+	if err != nil {
+		return err
+	}
+
+	// validate new password
+	//err = utils.ValidatePassword(newPassword)
+	//if err != nil {
+	//	return err
+	//}
+
+	// hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	// update user password
+	return s.userRepo.UpdateUserPassword(ctx, userId, string(hashedPassword))
+}
+
+// VerifyResetPasswordToken verifies a reset password token
+func (s *UserService) VerifyResetPasswordToken(ctx context.Context, token string) (uuid.UUID, error) {
+	// verify reset password token
+	passwordToken, err := utils.VerifyResetPasswordToken(token)
+	return passwordToken, err
 }

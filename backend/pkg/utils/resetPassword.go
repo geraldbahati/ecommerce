@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"log"
 	"net/smtp"
 	"strings"
 	"time"
 )
 
-var jwtResetPasswordSecret = []byte("eK_sS2AgDstNYrh0Bx5LK3nPx-z1h2l_ZdjchgQjvyA=")
+var jwtResetPasswordSecret = []byte("LsM_Zx8sZHuBeC4ty9Aau3x1JuCw-jqeDLS5MxU9bvg=")
 
 func SendResetPasswordEmail(userID uuid.UUID, email string) error {
 	// generate reset password token
@@ -20,7 +21,7 @@ func SendResetPasswordEmail(userID uuid.UUID, email string) error {
 	}
 
 	// generate reset password link
-	resetPasswordLink := fmt.Sprintf("http://localhost:3000/reset-password?token=%s", resetPasswordToken)
+	resetPasswordLink := fmt.Sprintf("http://localhost:8000/reset-password?token=%s", resetPasswordToken)
 
 	// send email
 	err = sendEmail(email, resetPasswordLink)
@@ -54,12 +55,14 @@ func VerifyResetPasswordToken(tokenString string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return jwtResetPasswordSecret, nil
 	})
+
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
 	// check if token is valid
 	if !token.Valid {
+
 		return uuid.UUID{}, errors.New("invalid token")
 	}
 
@@ -88,7 +91,7 @@ func sendEmail(email string, resetPasswordLink string) error {
 		"Content-Type: text/html; charset=\"utf-8\"",
 	}
 	header := strings.Join(headers, "\r\n")
-
+	log.Printf(resetPasswordLink)
 	// email body
 	body := `
         <html>
