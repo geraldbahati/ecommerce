@@ -232,3 +232,18 @@ func (r *SQLUserRepository) UpdateUserProfilePicture(ctx context.Context, user m
 		TwoFactorAuth:  updatedUser.TwoFactorAuth,
 	}, nil
 }
+
+// UpdateUserPassword updates the password of a user
+func (r *SQLUserRepository) UpdateUserPassword(ctx context.Context, userId uuid.UUID, newPassword string) error {
+	log.Printf("Updating password of user with id %s", userId.String())
+
+	// update user
+	_, err := r.DB.UpdateUserPassword(ctx, database.UpdateUserPasswordParams{
+		ID:             userId,
+		HashedPassword: newPassword,
+	})
+	if err != nil {
+		log.Printf("Error updating password of user with id %s: %s", userId.String(), err.Error())
+	}
+	return err
+}
