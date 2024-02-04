@@ -1,13 +1,14 @@
 package main
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/geraldbahati/ecommerce/internal/database"
 	"github.com/geraldbahati/ecommerce/pkg/handlers"
 	"github.com/geraldbahati/ecommerce/pkg/middleware"
 	"github.com/geraldbahati/ecommerce/pkg/repository/sqlc"
 	"github.com/geraldbahati/ecommerce/pkg/usecases"
-	"log"
-	"net/http"
 
 	"github.com/geraldbahati/ecommerce/pkg/config"
 	"github.com/gorilla/mux"
@@ -26,18 +27,22 @@ func main() {
 
 	// initialize repositories
 	userRepo := sqlc.NewSQLUserRepository(db)
-
+	productRepo := sqlc.NewSQLProductRepository(db)
+	
 	// initialize services
 	userService := usecases.NewUserService(userRepo)
+	productService := usecases.NewProductService(productRepo)
 
 	// initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
+	productHandler := handlers.NewProductHandler(productService)
 
 	// setup routes
 	r := mux.NewRouter()
 	r.Use(middleware.CORS)
 
 	getUserRouter(r, userHandler)
+	getProductRouter(r, productHandler)
 
 	// start server
 	log.Printf("Server listening on port %s", cfg.Port)
@@ -59,4 +64,9 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	protectedUserRouter.HandleFunc("/update", userHandler.UpdateUser).Methods(http.MethodPut)
 	protectedUserRouter.HandleFunc("/update-profile-picture", userHandler.UpdateProfilePicture).Methods(http.MethodPut)
 	protectedUserRouter.HandleFunc("/reset-password", userHandler.RequestPasswordReset).Methods(http.MethodPut)
+}
+
+func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler){
+	productRouter := r.PathPrefix("/api/products").Subrouter()
+	productRouter.HandleFunc("/list-products", productHandler.GetProducts).Methods(http.MethodGet)
 }

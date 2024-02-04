@@ -1,29 +1,28 @@
 package model
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Product struct{
-	ID uuid.UUID					`json:"id"`
-	Name string						`json:"name"`
-	Description string				`json:"description"`
-	Price float32					`json:"price"`
-	StockQuantity int				`json:"stock_quantity"`
-	CategoryID uuid.UUID			`json:"category_id"`
-	ImageURLs []string				`json:"image_urls"`
-	Brand string					`json:"brand"`
-	Color string					`json:"color"`
-	Rating float32					`json:"rating"`
-	ReviewCount int					`json:"review_count"`
-	DiscountRate float32			`json:"discount_rate"`
-	Tags []string					`json:"tags"`
-	WarrantyPeriod string			`json:"warranty_period"`
-	RelatedProducts []uuid.UUID		`json:"related_products"`
-	CreatedAt time.Time				`json:"created_at"`
-	UpdatedAt time.Time				`json:"updated_at"`
+	ID              uuid.UUID			`json:"id"`
+	Name            string				`json:"name"`
+	Description     sql.NullString		`json:"description"`
+	ImageUrl        sql.NullString		`json:"image_url"`
+	Price           string				`json:"price"`
+	Stock           int32				`json:"stock"`
+	CategoryID      uuid.UUID			`json:"category_id"`
+	Brand           sql.NullString		`json:"brand"`
+	Rating          string				`json:"rating"`
+	ReviewCount     int32				`json:"review_count"`
+	DiscountRate    string				`json:"discount_rate"`
+	Keywords        sql.NullString		`json:"keywords"`
+	IsActive        bool				`json:"is_active"`
+	CreatedAt       time.Time			`json:"created_at"`
+	LastUpdated     sql.NullTime		`json:"last_updated"`
 }
 
 type ProductListing struct{
@@ -48,3 +47,5 @@ type ProductReview struct{
 	Comment string			`json:"comment"`
 	CreatedAt time.Time		`json:"created_at"`
 }
+
+

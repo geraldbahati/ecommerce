@@ -1,4 +1,4 @@
--- +gooseUp
+-- +goose Up
 CREATE TABLE refresh_tokens (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
@@ -9,5 +9,5 @@ CREATE TABLE refresh_tokens (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
--- +gooseDown
+-- +goose Down
 DROP TABLE refresh_tokens;

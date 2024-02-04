@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/geraldbahati/ecommerce/pkg/usecases"
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type ProductHandler struct{
@@ -18,9 +20,9 @@ func NewProductHandler(productService *usecases.ProductService) *ProductHandler{
 	}
 }
 
-func (h *ProductHandler) GetProductList(w http.ResponseWriter, r *http.Request){
+func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request){
 	// Retrieve and return a list of products
-	products, err := h.productService.GetProductList(r.Context())
+	products, err := h.productService.GetProducts(r.Context())
 	if err != nil{
 		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve product list: %v", err))
 		return
@@ -32,8 +34,13 @@ func (h *ProductHandler) GetProductList(w http.ResponseWriter, r *http.Request){
 
 func (h *ProductHandler) GetProductDetails(w http.ResponseWriter, r *http.Request){
 	// Extract product ID  from request parameter
-	productID := extractProductIDFromRequest(r)
-	// TODO: To be looked at
+	productID, err := extractProductIDFromRequest(r)
+
+	// TODO: To be looked at on how to handle error at this point
+	if err != nil {
+		log.Println("Error extracting product ID from request: ", err)
+		return
+	}
 
 	if productID == uuid.Nil {
 		RespondWithError(w, http.StatusBadRequest, "Invalid Product ID")
@@ -51,38 +58,22 @@ func (h *ProductHandler) GetProductDetails(w http.ResponseWriter, r *http.Reques
 	RespondWithJSON(w, http.StatusOK, productDetails)
 }
 
-func (h *ProductHandler) AddToWishlist(w http.ResponseWriter, r *http.Request){
-	// Extract product ID from request parameter
-	productID := extractProductIDFromRequest(r)
-	userID := extractUserIDFromRequest(r)
-	if productID == uuid.Nil{
-		RespondWithError(w, http.StatusBadRequest, "Invalid Product ID")
-		return
-	}
-
-	if userID == uuid.Nil{
-		RespondWithError(w, http.StatusBadRequest, "Invalid User ID")
-		return
-	}
-
-	// Add the product to the user's wishlist
-	// TODO: Check implemetation of wishlist service (parameters)
-	err := h.productService.AddToWishlist(r.Context(), userID, productID)
-	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to add product to wishlist: %v", err))
-		return
-	} 
-
-	// Respond with success message
-	RespondWithJSON(w, http.StatusOK, map[string]string{"message":"Product added to wishlist"})
-}
-
 
 // Helper functions
-func extractProductIDFromRequest(r *http.Request) uuid.UUID{
-	return uuid.Nil
+func extractProductIDFromRequest(r *http.Request) (uuid.UUID, error) {
+    vars := mux.Vars(r)
+    productID, err := uuid.Parse(vars["productID"])
+    if err != nil {
+        return uuid.Nil, err
+    }
+    return productID, nil
 }
 
-func extractUserIDFromRequest(r *http.Request) uuid.UUID{
-	return uuid.Nil
+func extractUserIDFromRequest(r *http.Request) (uuid.UUID, error) {
+    vars := mux.Vars(r)
+    userID, err := uuid.Parse(vars["userID"])
+    if err != nil {
+        return uuid.Nil, err
+    }
+    return userID, nil
 }

@@ -21,7 +21,7 @@ func LoadConfig() Config {
 		log.Println("Error loadding .env file:", err)
 		return Config{
 			Port: "8000",
-			DbUrl: "postgresql://postgres:staphone@16@localhost:5432/staphone?sslmode=disable",
+			DbUrl: "postgresql://postgres:staphone@16@localhost:5432/ecommerce?sslmode=disable",
 		}
 	}
 

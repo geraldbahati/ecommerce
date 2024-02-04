@@ -2,8 +2,10 @@ package usecases
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
-	"github.com/geraldbahati/ecommerce/pkg/model"
+	"github.com/geraldbahati/ecommerce/internal/database"
 	"github.com/geraldbahati/ecommerce/pkg/repository"
 	"github.com/google/uuid"
 )
@@ -18,31 +20,86 @@ func NewProductService(productRepo repository.ProductRepository) *ProductService
 	}
 }
 
-// Retrieves a list of products
-func (s *ProductService) GetProductList(ctx context.Context) ([]model.ProductListing, error){
-	// Logic to retrieve and return a list of products
-	// Fetch only important details
-
-	return s.productRepo.GetProductList(ctx)
+// Get All Products
+func (s *ProductService) GetProducts(ctx context.Context)([]database.Product, error){
+	return s.productRepo.GetProducts(ctx)
 }
 
-// Retrieves detailed information for a specified product
-func (s *ProductService) GetProductDetails(ctx context.Context, productID uuid.UUID) (model.ProductDetails, error){
-	// Logic to retrieve and return detailed product information
-
-	return s.productRepo.GetProductDetails(ctx, productID)
+// Get a specific product details
+func (s *ProductService) GetProductDetails(ctx context.Context, productID uuid.UUID)(database.Product, error){
+	return s.productRepo.GetProductById(ctx, productID)
 }
 
-// Adds the product to the user's wishlist
-func (s *ProductService) AddToWishlist(ctx context.Context,userID uuid.UUID, productID uuid.UUID) error{
-	// Logic to add the specified product to the user's wishlist
-	// TODO: Ensure proper validation and handling of duplicates if necessary
-	return s.productRepo.AddToWishlist(ctx, userID,productID)
+// Adds a Product to the database
+func(s *ProductService) AddProduct(
+	ctx context.Context,
+	ID uuid.UUID,
+	Name         string,
+	Description  sql.NullString,
+	ImageUrl     sql.NullString,
+	Price        string,
+	Stock        int32,
+	CategoryID   uuid.UUID,
+	Brand        sql.NullString,
+	Rating       string,
+	ReviewCount  int32,
+	DiscountRate string,
+	Keywords     sql.NullString,
+	IsActive     bool,
+	CreatedAt    time.Time,
+	LastUpdated  sql.NullTime)(database.Product, error){
+	return s.productRepo.AddProduct(ctx, database.Product{
+		ID: ID,
+		Name: Name,
+		Description: Description,
+		ImageUrl: ImageUrl,
+		Price: Price,
+		Stock: Stock,
+		CategoryID: CategoryID,
+		Brand: Brand,
+		Rating: Rating,
+		ReviewCount: ReviewCount,
+		DiscountRate: DiscountRate,
+		Keywords: Keywords,
+		IsActive: IsActive,
+		CreatedAt: CreatedAt,
+		LastUpdated: LastUpdated,
+	})
 }
 
-// TODO: Implement search, cart management, checkout process etc
+// Update an existing product
+func (s *ProductService) UpdateProduct(ctx context.Context,
+	ID           uuid.UUID,
+    Name         string,
+    Description  sql.NullString,
+    ImageUrl     sql.NullString,
+    Price        string,
+    Stock        int32,
+    CategoryID   uuid.UUID,
+    Brand        sql.NullString,
+    Rating       string,
+    ReviewCount  int32,
+    DiscountRate string,
+    Keywords     sql.NullString,
+    IsActive     bool)(database.Product, error){
+	return s.productRepo.UpdateProduct(ctx, database.UpdateProductParams{
+		ID: ID,
+		Name: Name,
+		Description: Description,
+		ImageUrl: ImageUrl,
+		Price: Price,
+		Stock: Stock,
+		CategoryID: CategoryID,
+		Brand: Brand,
+		Rating: Rating,
+		ReviewCount: ReviewCount,
+		DiscountRate: DiscountRate,
+		Keywords: Keywords,
+		IsActive: IsActive,
+	})
+}
 
-// Helper function to extract the user ID from the context
-func getUserIDFromContext(ctx context.Context) uuid.UUID{
-	return ctx.Value("userId").(uuid.UUID)
+// Delete and existing product
+func (s *ProductService) DeleteProduct(ctx context.Context, productID uuid.UUID) error{
+	return s.productRepo.DeleteProduct(ctx, productID)
 }
