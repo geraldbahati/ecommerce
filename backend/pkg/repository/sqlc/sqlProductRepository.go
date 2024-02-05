@@ -6,7 +6,6 @@ import (
 	"log"
 
 	"github.com/geraldbahati/ecommerce/internal/database"
-	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/google/uuid"
 )
 
@@ -14,66 +13,12 @@ type SQLProductRepository struct {
 	DB *database.Queries
 }
 
-// DeleteProduct implements repository.ProductRepository.
-func (*SQLProductRepository) DeleteProduct(ctx context.Context, productID uuid.UUID) error {
-	panic("unimplemented")
-}
-
-// GetAvailableProducts implements repository.ProductRepository.
-func (*SQLProductRepository) GetAvailableProducts(ctx context.Context) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetFilteredProducts implements repository.ProductRepository.
-func (*SQLProductRepository) GetFilteredProducts(ctx context.Context, arg database.GetFilteredProductsParams) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetPaginatedProducts implements repository.ProductRepository.
-func (*SQLProductRepository) GetPaginatedProducts(ctx context.Context, arg database.GetPaginatedProductsParams) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetProductById implements repository.ProductRepository.
-func (*SQLProductRepository) GetProductById(ctx context.Context, id uuid.UUID) (database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetProductDetails implements repository.ProductRepository.
-func (*SQLProductRepository) GetProductDetails(ctx context.Context, productID uuid.UUID) (model.ProductDetails, error) {
-	panic("unimplemented")
-}
-
-// GetProductWithRecommendations implements repository.ProductRepository.
-func (*SQLProductRepository) GetProductWithRecommendations(ctx context.Context, id uuid.UUID) (database.GetProductWithRecommendationsRow, error) {
-	panic("unimplemented")
-}
-
-// GetProducts implements repository.ProductRepository.
-func (*SQLProductRepository) GetProducts(ctx context.Context) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetProductsByCategory implements repository.ProductRepository.
-func (*SQLProductRepository) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
-// GetSalesTrends implements repository.ProductRepository.
-func (*SQLProductRepository) GetSalesTrends(ctx context.Context) ([]database.GetSalesTrendsRow, error) {
-	panic("unimplemented")
-}
-
-// SearchProducts implements repository.ProductRepository.
-func (*SQLProductRepository) SearchProducts(ctx context.Context, query sql.NullString) ([]database.Product, error) {
-	panic("unimplemented")
-}
-
 func NewSQLProductRepository(db *database.Queries) *SQLProductRepository {
 	return &SQLProductRepository{
 		DB: db,
 	}
 }
+
 
 // Adds a new product to the database
 func (r *SQLProductRepository) AddProduct(ctx context.Context, product database.Product) (database.Product, error) {
@@ -160,3 +105,114 @@ func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product databa
 		LastUpdated:  updatedProduct.LastUpdated,
 	}, err
 }
+
+
+// DeleteProduct implements repository.ProductRepository.
+func (r *SQLProductRepository) DeleteProduct(ctx context.Context, productID uuid.UUID) error {
+	deletedProduct, err := r.DB.GetProductById(ctx, productID)
+	if err != nil{
+		log.Printf("Error fetching product with id %s: %s", productID.String(), err.Error())
+		return err
+	}
+
+	err = r.DB.DeleteProduct(ctx, deletedProduct.ID)
+	if err != nil {
+		log.Printf("Error deleting product with id %s: %s", productID.String(), err.Error())
+		return err
+	}
+
+	return nil
+}
+
+// GetAvailableProducts implements repository.ProductRepository.
+func (r *SQLProductRepository) GetAvailableProducts(ctx context.Context) ([]database.Product, error) {
+	availableProducts, err := r.DB.GetAvailableProducts(ctx)
+	if err != nil{
+		log.Printf("Error fetching available products : %s", err.Error())
+		return []database.Product{}, err
+	}
+
+	return availableProducts, nil
+}
+
+// GetFilteredProducts implements repository.ProductRepository.
+func (r *SQLProductRepository) GetFilteredProducts(ctx context.Context, arg database.GetFilteredProductsParams) ([]database.Product, error) {
+	filteredProducts, err := r.DB.GetFilteredProducts(ctx, arg)
+	if err != nil {
+		log.Printf("Error fetching filtered products with args%s, %s: %s", arg.CategoryID.String(),arg.Price, err.Error())
+		return []database.Product{}, err
+	}
+	return filteredProducts, nil
+}
+
+// GetPaginatedProducts implements repository.ProductRepository.
+func (r *SQLProductRepository) GetPaginatedProducts(ctx context.Context, arg database.GetPaginatedProductsParams) ([]database.Product, error) {
+	paginatedProducts, err := r.DB.GetPaginatedProducts(ctx, arg)
+	if err != nil {
+		log.Printf("Error fetching paginated products with args %d, %d: %s", arg.Limit,arg.Offset, err.Error())
+		return []database.Product{}, err
+	}
+	return paginatedProducts, nil
+}
+
+// GetProductById implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProductById(ctx context.Context, id uuid.UUID) (database.Product, error) {
+	product, err := r.DB.GetProductById(ctx, id)
+	if err != nil{
+		log.Printf("Error fetching product with id %s: %s", id.String(), err.Error())
+		return database.Product{}, err
+	}
+	return product, nil
+}
+
+
+// GetProductWithRecommendations implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProductWithRecommendations(ctx context.Context, id uuid.UUID) (database.GetProductWithRecommendationsRow, error) {
+	recommendedProduct, err := r.DB.GetProductWithRecommendations(ctx, id)
+	if err != nil{
+		log.Printf("Error fetching recommended products with reference product id %s: %s", id.String(), err.Error())
+		return database.GetProductWithRecommendationsRow{}, err
+	}
+	return recommendedProduct, nil
+}
+
+// GetProducts implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProducts(ctx context.Context) ([]database.Product, error) {
+	products, err := r.DB.GetProducts(ctx)
+	if err != nil{
+		log.Printf("Error fetching all products in the database : %s", err.Error())
+		return []database.Product{}, err
+	}
+	return products, nil
+}
+
+// GetProductsByCategory implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]database.Product, error) {
+	categorizedProducts, err := r.DB.GetProductsByCategory(ctx, categoryID)
+	if err != nil {
+		log.Printf("Error fetching categorized products with category id %s: %s", categoryID.String(), err.Error())
+		return []database.Product{}, err
+	}
+	return categorizedProducts, nil
+}
+
+// GetSalesTrends implements repository.ProductRepository.
+func (r *SQLProductRepository) GetSalesTrends(ctx context.Context) ([]database.GetSalesTrendsRow, error) {
+	salesTrendRow, err := r.DB.GetSalesTrends(ctx)
+	if err != nil{
+		log.Printf("Error fetching the row of sales trends : %s",  err.Error())
+		return []database.GetSalesTrendsRow{}, err
+	}
+	return salesTrendRow, nil
+}
+
+// SearchProducts implements repository.ProductRepository.
+func (r *SQLProductRepository) SearchProducts(ctx context.Context, query sql.NullString) ([]database.Product, error) {
+	queryResults, err := r.DB.SearchProducts(ctx, query)
+	if err != nil{
+		log.Printf("Error fetching products with query  %s: %s", query.String ,err.Error())
+		return []database.Product{}, err
+	}
+	return queryResults, nil
+}
+

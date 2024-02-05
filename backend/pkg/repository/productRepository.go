@@ -5,7 +5,6 @@ import (
 	"database/sql"
 
 	"github.com/geraldbahati/ecommerce/internal/database"
-	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/google/uuid"
 )
 
@@ -21,8 +20,6 @@ type ProductRepository interface{
 
 	// Get Product methods
 	GetProducts(ctx context.Context)([]database.Product, error)
-
-	GetProductDetails(ctx context.Context, productID uuid.UUID) (model.ProductDetails, error)
 
 	GetAvailableProducts(ctx context.Context)([]database.Product, error)
 
