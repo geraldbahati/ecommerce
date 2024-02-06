@@ -82,6 +82,12 @@ type Product struct {
 	LastUpdated  sql.NullTime
 }
 
+type RecentlyViewedProduct struct {
+	UserID       uuid.UUID
+	ProductID    uuid.UUID
+	LastViewedAt time.Time
+}
+
 type RefreshToken struct {
 	ID        uuid.UUID
 	UserID    uuid.UUID
