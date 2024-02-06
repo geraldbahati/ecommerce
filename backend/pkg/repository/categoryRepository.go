@@ -19,7 +19,6 @@ type CategoryRepository interface {
 	// get
 	GetCategoryById(ctx context.Context, categoryId uuid.UUID) (model.Category, error)
 	GetAllCategories(ctx context.Context, offset int32, limit int32) (interface{}, error)
-	GetCategoryByName(ctx context.Context, categoryName string) (model.Category, error)
 	SoftSearchCategoriesByName(ctx context.Context, categoryName string, offset int32, limit int32) (interface{}, error)
 	GetActiveCategories(ctx context.Context, offset int32, limit int32) (interface{}, error)
 	GetInactiveCategories(ctx context.Context, offset int32, limit int32) (interface{}, error)

@@ -22,10 +22,6 @@ WHERE id = $1;
 SELECT * FROM categories
 WHERE id = $1;
 
--- name: FindCategoryByName :one
-SELECT * FROM categories
-WHERE name = $1;
-
 -- name: FindCategoriesBySoftName :many
 SELECT * FROM categories
 WHERE name LIKE $1

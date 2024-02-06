@@ -130,27 +130,6 @@ func (q *Queries) FindCategoryByID(ctx context.Context, id uuid.UUID) (Category,
 	return i, err
 }
 
-const findCategoryByName = `-- name: FindCategoryByName :one
-SELECT id, name, description, image_url, seo_keywords, is_active, created_at, last_updated FROM categories
-WHERE name = $1
-`
-
-func (q *Queries) FindCategoryByName(ctx context.Context, name string) (Category, error) {
-	row := q.db.QueryRowContext(ctx, findCategoryByName, name)
-	var i Category
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.ImageUrl,
-		&i.SeoKeywords,
-		&i.IsActive,
-		&i.CreatedAt,
-		&i.LastUpdated,
-	)
-	return i, err
-}
-
 const getActiveCategories = `-- name: GetActiveCategories :many
 SELECT id, name, description, image_url, seo_keywords, is_active, created_at, last_updated FROM categories
 WHERE is_active = TRUE

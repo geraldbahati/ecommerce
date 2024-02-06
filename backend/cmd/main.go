@@ -73,9 +73,9 @@ func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler)
 
 	protectedCategoryRouter := categoryRouter.PathPrefix("").Subrouter()
 	protectedCategoryRouter.Use(middleware.Auth)
-	//protectedCategoryRouter.HandleFunc("/active", categoryHandler.GetActiveCategories).Methods(http.MethodGet)
-	//protectedCategoryRouter.HandleFunc("/inactive", categoryHandler.GetInactiveCategories).Methods(http.MethodGet)
-	//protectedCategoryRouter.HandleFunc("/{id}", categoryHandler.UpdateCategory).Methods(http.MethodPut)
-	//protectedCategoryRouter.HandleFunc("/{id}", categoryHandler.DeleteCategory).Methods(http.MethodDelete)
+	protectedCategoryRouter.HandleFunc("/active", categoryHandler.GetActiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/inactive", categoryHandler.GetInactiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.UpdateCategory).Methods(http.MethodPut)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.DeleteCategory).Methods(http.MethodDelete)
 	protectedCategoryRouter.HandleFunc("", categoryHandler.CreateCategory).Methods(http.MethodPost)
 }

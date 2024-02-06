@@ -186,3 +186,43 @@ func (s *CategoryService) SearchCategoriesByName(ctx context.Context, name strin
 	// return categories
 	return *paginatedCategories, nil
 }
+
+// GetActiveCategories gets all active categories
+func (s *CategoryService) GetActiveCategories(ctx context.Context, pageSize int32, page int32) (model.PaginationResult, error) {
+	// get category count
+	totalCount, err := s.categoryRepo.GetCategoryCount(ctx)
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// get active categories
+	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, func(offset int32, limit int32) (interface{}, error) {
+		return s.categoryRepo.GetActiveCategories(ctx, offset, limit)
+	})
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// return categories
+	return *paginatedCategories, nil
+}
+
+// GetInactiveCategories gets all inactive categories
+func (s *CategoryService) GetInactiveCategories(ctx context.Context, pageSize int32, page int32) (model.PaginationResult, error) {
+	// get category count
+	totalCount, err := s.categoryRepo.GetCategoryCount(ctx)
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// get inactive categories
+	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, func(offset int32, limit int32) (interface{}, error) {
+		return s.categoryRepo.GetInactiveCategories(ctx, offset, limit)
+	})
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// return categories
+	return *paginatedCategories, nil
+}

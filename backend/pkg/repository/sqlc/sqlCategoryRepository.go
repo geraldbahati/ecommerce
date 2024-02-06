@@ -135,27 +135,6 @@ func (r *SQLCategoryRepository) GetAllCategories(ctx context.Context, offset int
 	return modelCategories, nil
 }
 
-// GetCategoryByName gets a category by name
-func (r *SQLCategoryRepository) GetCategoryByName(ctx context.Context, categoryName string) (model.Category, error) {
-	// get category from database
-	category, err := r.DB.FindCategoryByName(ctx, categoryName)
-	if err != nil {
-		return model.Category{}, err
-	}
-
-	// return category
-	return model.Category{
-		ID:          category.ID,
-		Name:        category.Name,
-		Description: category.Description,
-		ImageUrl:    category.ImageUrl,
-		SeoKeywords: category.SeoKeywords,
-		IsActive:    category.IsActive,
-		CreatedAt:   category.CreatedAt,
-		LastUpdated: category.LastUpdated,
-	}, nil
-}
-
 // SoftSearchCategoriesByName soft searches categories by name
 func (r *SQLCategoryRepository) SoftSearchCategoriesByName(ctx context.Context, categoryName string, offset int32, limit int32) (interface{}, error) {
 	// soft search categories from database
