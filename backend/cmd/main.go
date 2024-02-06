@@ -28,14 +28,17 @@ func main() {
 	// initialize repositories
 	userRepo := sqlc.NewSQLUserRepository(db)
 	productRepo := sqlc.NewSQLProductRepository(db)
+  categoryRepo := sqlc.NewSQLCategoryRepository(db)
 	
 	// initialize services
 	userService := usecases.NewUserService(userRepo)
 	productService := usecases.NewProductService(productRepo)
+  categoryService := usecases.NewCategoryService(categoryRepo)
 
 	// initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
 	productHandler := handlers.NewProductHandler(productService)
+  categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	// setup routes
 	r := mux.NewRouter()
@@ -43,6 +46,8 @@ func main() {
 
 	getUserRouter(r, userHandler)
 	getProductRouter(r, productHandler)
+	getCategoryRouter(r, categoryHandler)
+
 
 	// start server
 	log.Printf("Server listening on port %s", cfg.Port)
@@ -80,4 +85,19 @@ func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler){
 	productRouter.HandleFunc("/categorized", productHandler.GetProductsByCategory).Methods(http.MethodGet)
 	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
+  
+ 
+func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
+	categoryRouter := r.PathPrefix("/api/categories").Subrouter()
+	categoryRouter.HandleFunc("", categoryHandler.GetAllCategories).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/{id}/", categoryHandler.GetCategoryById).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/search", categoryHandler.SearchCategoriesByName).Methods(http.MethodGet)
+
+	protectedCategoryRouter := categoryRouter.PathPrefix("").Subrouter()
+	protectedCategoryRouter.Use(middleware.Auth)
+	protectedCategoryRouter.HandleFunc("/active", categoryHandler.GetActiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/inactive", categoryHandler.GetInactiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.UpdateCategory).Methods(http.MethodPut)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.DeleteCategory).Methods(http.MethodDelete)
+	protectedCategoryRouter.HandleFunc("", categoryHandler.CreateCategory).Methods(http.MethodPost)
 }
