@@ -4,16 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/geraldbahati/ecommerce/pkg/model"
-	"github.com/geraldbahati/ecommerce/pkg/repository"
-	"github.com/geraldbahati/ecommerce/pkg/utils"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/geraldbahati/ecommerce/pkg/model"
+	"github.com/geraldbahati/ecommerce/pkg/repository"
+	"github.com/geraldbahati/ecommerce/pkg/utils"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
