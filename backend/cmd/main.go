@@ -28,17 +28,17 @@ func main() {
 	// initialize repositories
 	userRepo := sqlc.NewSQLUserRepository(db)
 	productRepo := sqlc.NewSQLProductRepository(db)
-  categoryRepo := sqlc.NewSQLCategoryRepository(db)
-	
+	categoryRepo := sqlc.NewSQLCategoryRepository(db)
+
 	// initialize services
 	userService := usecases.NewUserService(userRepo)
 	productService := usecases.NewProductService(productRepo)
-  categoryService := usecases.NewCategoryService(categoryRepo)
+	categoryService := usecases.NewCategoryService(categoryRepo)
 
 	// initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
 	productHandler := handlers.NewProductHandler(productService)
-  categoryHandler := handlers.NewCategoryHandler(categoryService)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	// setup routes
 	r := mux.NewRouter()
@@ -47,7 +47,6 @@ func main() {
 	getUserRouter(r, userHandler)
 	getProductRouter(r, productHandler)
 	getCategoryRouter(r, categoryHandler)
-
 
 	// start server
 	log.Printf("Server listening on port %s", cfg.Port)
@@ -71,7 +70,7 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	protectedUserRouter.HandleFunc("/reset-password", userHandler.RequestPasswordReset).Methods(http.MethodPut)
 }
 
-func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler){
+func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler) {
 	productRouter := r.PathPrefix("/api/products").Subrouter()
 	productRouter.HandleFunc("/list", productHandler.GetProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/create", productHandler.AddProduct).Methods(http.MethodPost)
@@ -85,8 +84,8 @@ func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler){
 	productRouter.HandleFunc("/categorized", productHandler.GetProductsByCategory).Methods(http.MethodGet)
 	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
-  
- 
+}
+
 func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
 	categoryRouter := r.PathPrefix("/api/categories").Subrouter()
 	categoryRouter.HandleFunc("", categoryHandler.GetAllCategories).Methods(http.MethodGet)
