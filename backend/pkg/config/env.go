@@ -8,8 +8,10 @@ import (
 )
 
 type Config struct {
-	Port  string
-	DbUrl string
+	Port            string
+	DbUrl           string
+	DefaultPageSize int32
+	DefaultPage     int32
 }
 
 func LoadConfig() Config {
@@ -18,8 +20,10 @@ func LoadConfig() Config {
 	}
 
 	return Config{
-		Port:  getEnv("PORT", "8080"),
-		DbUrl: getEnv("DB_URL", ""),
+		Port:            getEnv("PORT", "8080"),
+		DbUrl:           getEnv("DB_URL", ""),
+		DefaultPageSize: 100,
+		DefaultPage:     1,
 	}
 }
 

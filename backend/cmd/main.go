@@ -26,18 +26,22 @@ func main() {
 
 	// initialize repositories
 	userRepo := sqlc.NewSQLUserRepository(db)
+	categoryRepo := sqlc.NewSQLCategoryRepository(db)
 
 	// initialize services
 	userService := usecases.NewUserService(userRepo)
+	categoryService := usecases.NewCategoryService(categoryRepo)
 
 	// initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
 	// setup routes
 	r := mux.NewRouter()
 	r.Use(middleware.CORS)
 
 	getUserRouter(r, userHandler)
+	getCategoryRouter(r, categoryHandler)
 
 	// start server
 	log.Printf("Server listening on port %s", cfg.Port)
@@ -59,4 +63,19 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 	protectedUserRouter.HandleFunc("/update", userHandler.UpdateUser).Methods(http.MethodPut)
 	protectedUserRouter.HandleFunc("/update-profile-picture", userHandler.UpdateProfilePicture).Methods(http.MethodPut)
 	protectedUserRouter.HandleFunc("/reset-password", userHandler.RequestPasswordReset).Methods(http.MethodPut)
+}
+
+func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
+	categoryRouter := r.PathPrefix("/api/categories").Subrouter()
+	categoryRouter.HandleFunc("", categoryHandler.GetAllCategories).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/{id}/", categoryHandler.GetCategoryById).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/search", categoryHandler.SearchCategoriesByName).Methods(http.MethodGet)
+
+	protectedCategoryRouter := categoryRouter.PathPrefix("").Subrouter()
+	protectedCategoryRouter.Use(middleware.Auth)
+	protectedCategoryRouter.HandleFunc("/active", categoryHandler.GetActiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/inactive", categoryHandler.GetInactiveCategories).Methods(http.MethodGet)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.UpdateCategory).Methods(http.MethodPut)
+	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.DeleteCategory).Methods(http.MethodDelete)
+	protectedCategoryRouter.HandleFunc("", categoryHandler.CreateCategory).Methods(http.MethodPost)
 }

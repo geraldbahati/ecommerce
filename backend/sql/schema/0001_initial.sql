@@ -23,8 +23,6 @@ CREATE TABLE users (
    CHECK (user_role IN ('customer', 'admin', 'superadmin'))
 );
 
-
-
 CREATE TABLE categories (
     id UUID PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
