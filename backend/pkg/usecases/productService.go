@@ -103,3 +103,49 @@ func (s *ProductService) UpdateProduct(ctx context.Context,
 func (s *ProductService) DeleteProduct(ctx context.Context, productID uuid.UUID) error{
 	return s.productRepo.DeleteProduct(ctx, productID)
 }
+
+// Fetches a particular product
+func (s *ProductService) GetProductById(ctx context.Context, id uuid.UUID)(database.Product, error){
+	return s.productRepo.GetProductById(ctx, id)
+}
+
+// Fetches available products
+func(s *ProductService) GetAvailableProducts(ctx context.Context)([]database.Product, error){
+	return s.productRepo.GetAvailableProducts(ctx)
+}
+
+// Fetches products based on filters
+func (s *ProductService) GetFilteredProducts(ctx context.Context, CategoryID uuid.UUID, Price string)([]database.Product, error){
+		return s.productRepo.GetFilteredProducts(ctx, database.GetFilteredProductsParams{
+			CategoryID: CategoryID,
+			Price: Price,
+		})
+}
+
+// Paginates products fetched from database
+func (s *ProductService) GetPaginatedProducts(ctx context.Context, Offset int32, Limit  int32)([]database.Product, error){
+	return s.productRepo.GetPaginatedProducts(ctx, database.GetPaginatedProductsParams{
+		Offset: Offset,
+		Limit: Limit,
+	})
+}
+
+// Filters products based on calculated recommendations
+func (s *ProductService) GetProductWithRecommendations(ctx context.Context, id uuid.UUID)(database.GetProductWithRecommendationsRow, error){
+	return s.productRepo.GetProductWithRecommendations(ctx, id)
+}
+
+// Filters products based by category
+func(s *ProductService) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID)([]database.Product, error){
+	return s.productRepo.GetProductsByCategory(ctx, categoryID)
+}
+
+// Searches for a particular product
+func (s *ProductService) SearchProducts(ctx context.Context, query sql.NullString)([]database.Product, error){
+	return s.productRepo.SearchProducts(ctx ,query)
+}
+
+// Returns a sales trend for the current month
+func (s *ProductService) GetSalesTrends(ctx context.Context)([]database.GetSalesTrendsRow, error){
+	return s.productRepo.GetSalesTrends(ctx)
+}

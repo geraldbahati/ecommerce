@@ -68,5 +68,16 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 
 func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler){
 	productRouter := r.PathPrefix("/api/products").Subrouter()
-	productRouter.HandleFunc("/list-products", productHandler.GetProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/list", productHandler.GetProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/create", productHandler.AddProduct).Methods(http.MethodPost)
+	productRouter.HandleFunc("/update", productHandler.UpdateProduct).Methods(http.MethodPut)
+	productRouter.HandleFunc("/delete", productHandler.DeleteProduct).Methods(http.MethodDelete)
+	productRouter.HandleFunc("/detail", productHandler.GetProductById).Methods(http.MethodGet)
+	productRouter.HandleFunc("/list/available", productHandler.GetAvailableProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/list/filtered", productHandler.GetFilteredProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/list/paginated", productHandler.GetPaginatedProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/recommended", productHandler.GetProductWithRecommendations).Methods(http.MethodGet)
+	productRouter.HandleFunc("/categorized", productHandler.GetProductsByCategory).Methods(http.MethodGet)
+	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
 }
