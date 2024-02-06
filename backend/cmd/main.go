@@ -68,8 +68,8 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
 	categoryRouter := r.PathPrefix("/api/categories").Subrouter()
 	categoryRouter.HandleFunc("", categoryHandler.GetAllCategories).Methods(http.MethodGet)
-	categoryRouter.HandleFunc("/{id}", categoryHandler.GetCategoryById).Methods(http.MethodGet)
-	//categoryRouter.HandleFunc("/search", categoryHandler.SearchCategoriesByName).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/{id}/", categoryHandler.GetCategoryById).Methods(http.MethodGet)
+	categoryRouter.HandleFunc("/search", categoryHandler.SearchCategoriesByName).Methods(http.MethodGet)
 
 	protectedCategoryRouter := categoryRouter.PathPrefix("").Subrouter()
 	protectedCategoryRouter.Use(middleware.Auth)

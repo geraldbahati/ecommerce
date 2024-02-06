@@ -90,3 +90,31 @@ func (h *CategoryHandler) GetCategoryById(w http.ResponseWriter, r *http.Request
 	// respond with category
 	RespondWithJSON(w, http.StatusOK, category)
 }
+
+func (h *CategoryHandler) SearchCategoriesByName(w http.ResponseWriter, r *http.Request) {
+	// get page and page size
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page_size")
+	name := r.URL.Query().Get("name")
+
+	var page int32 = 0
+	var pageSize int32 = 0
+
+	if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+		page = int32(p)
+	}
+
+	if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 {
+		pageSize = int32(ps)
+	}
+
+	// search categories
+	categories, err := h.categoryService.SearchCategoriesByName(r.Context(), name, pageSize, page)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to search categories")
+		return
+	}
+
+	// respond with categories
+	RespondWithJSON(w, http.StatusOK, categories)
+}

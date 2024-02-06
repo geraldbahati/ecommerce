@@ -153,7 +153,32 @@ func (s *CategoryService) GetAllCategories(ctx context.Context, pageSize int32, 
 	}
 
 	// get all categories
-	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, s.categoryRepo.GetAllCategories)
+	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, func(offset int32, limit int32) (interface{}, error) {
+		return s.categoryRepo.GetAllCategories(ctx, offset, limit)
+	})
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// return categories
+	return *paginatedCategories, nil
+}
+
+// SearchCategoriesByName searches categories by name
+func (s *CategoryService) SearchCategoriesByName(ctx context.Context, name string, pageSize int32, page int32) (model.PaginationResult, error) {
+	// get category count
+	totalCount, err := s.categoryRepo.GetCategoryCount(ctx)
+	if err != nil {
+		return model.PaginationResult{}, err
+	}
+
+	// add wildcard to name
+	name = "%" + name + "%"
+
+	// search categories by name
+	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, func(offset int32, limit int32) (interface{}, error) {
+		return s.categoryRepo.SoftSearchCategoriesByName(ctx, name, offset, limit)
+	})
 	if err != nil {
 		return model.PaginationResult{}, err
 	}

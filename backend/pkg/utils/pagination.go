@@ -11,7 +11,7 @@ func Paginate(
 	totalCount int64,
 	page int32,
 	pageSize int32,
-	fetchData func(ctx context.Context, offset int32, limit int32) (interface{}, error),
+	fetchData func(offset int32, limit int32) (interface{}, error),
 ) (*model.PaginationResult, error) {
 	cfg := config.LoadConfig()
 
@@ -24,7 +24,7 @@ func Paginate(
 	}
 
 	offset := (page - 1) * pageSize
-	data, err := fetchData(ctx, offset, pageSize)
+	data, err := fetchData(offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
