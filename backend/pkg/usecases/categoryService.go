@@ -172,9 +172,6 @@ func (s *CategoryService) SearchCategoriesByName(ctx context.Context, name strin
 		return model.PaginationResult{}, err
 	}
 
-	// add wildcard to name
-	name = "%" + name + "%"
-
 	// search categories by name
 	paginatedCategories, err := utils.Paginate(ctx, totalCount, page, pageSize, func(offset int32, limit int32) (interface{}, error) {
 		return s.categoryRepo.SoftSearchCategoriesByName(ctx, name, offset, limit)

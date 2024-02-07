@@ -67,18 +67,18 @@ func (q *Queries) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 
 const findCategoriesBySoftName = `-- name: FindCategoriesBySoftName :many
 SELECT id, name, description, image_url, seo_keywords, is_active, created_at, last_updated FROM categories
-WHERE name LIKE $1
+WHERE name ILIKE '%' || $1 || '%'
 LIMIT $2 OFFSET $3
 `
 
 type FindCategoriesBySoftNameParams struct {
-	Name   string
-	Limit  int32
-	Offset int32
+	Column1 sql.NullString
+	Limit   int32
+	Offset  int32
 }
 
 func (q *Queries) FindCategoriesBySoftName(ctx context.Context, arg FindCategoriesBySoftNameParams) ([]Category, error) {
-	rows, err := q.db.QueryContext(ctx, findCategoriesBySoftName, arg.Name, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, findCategoriesBySoftName, arg.Column1, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

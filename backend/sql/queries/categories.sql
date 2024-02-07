@@ -24,7 +24,7 @@ WHERE id = $1;
 
 -- name: FindCategoriesBySoftName :many
 SELECT * FROM categories
-WHERE name LIKE $1
+WHERE name ILIKE '%' || $1 || '%'
 LIMIT $2 OFFSET $3;
 
 -- name: GetActiveCategories :many
