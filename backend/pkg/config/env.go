@@ -15,8 +15,16 @@ type Config struct {
 }
 
 func LoadConfig() Config {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+	if err := godotenv.Load(".env"); err != nil {
+		// log.Fatal("Error loading .env file: ", err)
+
+		// Added this for testing and debugging reasons
+		// To be removed
+		log.Println("Error loadding .env file:", err)
+		return Config{
+			Port: "8000",
+			DbUrl: "postgresql://postgres:staphone@16@localhost:5432/ecommerce?sslmode=disable",
+		}
 	}
 
 	return Config{
