@@ -67,7 +67,7 @@ func (q *Queries) DeleteCategory(ctx context.Context, id uuid.UUID) error {
 
 const findCategoriesBySoftName = `-- name: FindCategoriesBySoftName :many
 SELECT id, name, description, image_url, seo_keywords, is_active, created_at, last_updated FROM categories
-WHERE name ILIKE '%' || $1 || '%'
+WHERE name ILIKE '%' || $1 || '%' OR SEO_keywords ILIKE '%' || $1 || '%'
 LIMIT $2 OFFSET $3
 `
 
