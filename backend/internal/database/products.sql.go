@@ -16,24 +16,20 @@ import (
 
 const addProduct = `-- name: AddProduct :one
 INSERT INTO products (id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NULL)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0.0, 0, 0.0, $9, TRUE, NOW(), NULL)
 RETURNING id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated
 `
 
 type AddProductParams struct {
-	ID           uuid.UUID
-	Name         string
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	Price        string
-	Stock        int32
-	CategoryID   uuid.UUID
-	Brand        sql.NullString
-	Rating       string
-	ReviewCount  int32
-	DiscountRate string
-	Keywords     sql.NullString
-	IsActive     bool
+	ID          uuid.UUID
+	Name        string
+	Description sql.NullString
+	ImageUrl    sql.NullString
+	Price       string
+	Stock       int32
+	CategoryID  uuid.UUID
+	Brand       sql.NullString
+	Keywords    sql.NullString
 }
 
 func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product, error) {
@@ -46,11 +42,7 @@ func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product
 		arg.Stock,
 		arg.CategoryID,
 		arg.Brand,
-		arg.Rating,
-		arg.ReviewCount,
-		arg.DiscountRate,
 		arg.Keywords,
-		arg.IsActive,
 	)
 	var i Product
 	err := row.Scan(
@@ -71,6 +63,35 @@ func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product
 		&i.LastUpdated,
 	)
 	return i, err
+}
+
+const checkProductStock = `-- name: CheckProductStock :many
+SELECT id FROM products
+WHERE stock > 0
+AND (last_updated > NOW() - INTERVAL '1 DAY')
+`
+
+func (q *Queries) CheckProductStock(ctx context.Context) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, checkProductStock)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const deleteProduct = `-- name: DeleteProduct :exec
@@ -423,6 +444,75 @@ func (q *Queries) GetSalesTrends(ctx context.Context) ([]GetSalesTrendsRow, erro
 	for rows.Next() {
 		var i GetSalesTrendsRow
 		if err := rows.Scan(&i.Month, &i.TotalSales); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTrendingProducts = `-- name: GetTrendingProducts :many
+WITH TrendingProducts AS (
+    SELECT
+        p.category_id,
+        p.id AS product_id,
+        SUM(oi.quantity) AS sales_volume
+    FROM
+        order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+    WHERE
+            o.created_at > NOW() - INTERVAL '1 month'
+GROUP BY
+    p.category_id, p.id
+    )
+SELECT
+    tp.product_id,
+    p.name AS product_name,
+    p.price,
+    p.category_id,
+    c.name AS category_name,
+    tp.sales_volume
+FROM
+    TrendingProducts tp
+        JOIN products p ON tp.product_id = p.id
+        JOIN categories c ON p.category_id = c.id
+ORDER BY
+    c.name, tp.sales_volume DESC
+`
+
+type GetTrendingProductsRow struct {
+	ProductID    uuid.UUID
+	ProductName  string
+	Price        string
+	CategoryID   uuid.UUID
+	CategoryName string
+	SalesVolume  int64
+}
+
+func (q *Queries) GetTrendingProducts(ctx context.Context) ([]GetTrendingProductsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrendingProducts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTrendingProductsRow
+	for rows.Next() {
+		var i GetTrendingProductsRow
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductName,
+			&i.Price,
+			&i.CategoryID,
+			&i.CategoryName,
+			&i.SalesVolume,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

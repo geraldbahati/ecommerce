@@ -46,6 +46,7 @@ func (h *CategoryHandler) CreateCategory(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *CategoryHandler) GetAllCategories(w http.ResponseWriter, r *http.Request) {
+
 	// get page and page size
 	pageStr := r.URL.Query().Get("page")
 	pageSizeStr := r.URL.Query().Get("page_size")
