@@ -1,6 +1,6 @@
 -- name: AddProduct :one
 INSERT INTO products (id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NULL)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0.0, 0, 0.0, $9, TRUE, NOW(), NULL)
 RETURNING *;
 
 -- name: UpdateProduct :one
@@ -74,3 +74,37 @@ SELECT DATE_TRUNC('month', created_at) AS month, SUM(price) AS total_sales
 FROM orders
 GROUP BY month
 ORDER BY month;
+
+-- name: CheckProductStock :many
+SELECT id FROM products
+WHERE stock > 0
+AND (last_updated > NOW() - INTERVAL '1 DAY');
+
+-- name: GetTrendingProducts :many
+WITH TrendingProducts AS (
+    SELECT
+        p.category_id,
+        p.id AS product_id,
+        SUM(oi.quantity) AS sales_volume
+    FROM
+        order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+    WHERE
+            o.created_at > NOW() - INTERVAL '1 month'
+GROUP BY
+    p.category_id, p.id
+    )
+SELECT
+    tp.product_id,
+    p.name AS product_name,
+    p.price,
+    p.category_id,
+    c.name AS category_name,
+    tp.sales_volume
+FROM
+    TrendingProducts tp
+        JOIN products p ON tp.product_id = p.id
+        JOIN categories c ON p.category_id = c.id
+ORDER BY
+    c.name, tp.sales_volume DESC;

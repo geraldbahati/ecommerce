@@ -84,6 +84,7 @@ func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler) {
 	productRouter.HandleFunc("/categorized", productHandler.GetProductsByCategory).Methods(http.MethodGet)
 	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
+	productRouter.HandleFunc("/trending", productHandler.GetTrendingProducts).Methods(http.MethodGet)
 }
 
 func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
