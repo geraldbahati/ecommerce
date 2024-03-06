@@ -51,7 +51,7 @@ func (s *CategoryService) CreateCategory(
 
 	category := model.Category{
 		ID:          uuid.New(),
-		Name:        strings.ToLower(name),
+		Name:        name,
 		Description: descriptionValue,
 		ImageUrl:    imageUrlValue,
 		SeoKeywords: seoKeywordsValue,
