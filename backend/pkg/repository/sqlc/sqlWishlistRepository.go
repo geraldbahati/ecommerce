@@ -106,21 +106,21 @@ func (r *SQLWishlistRepository) RemoveItemFromWishlist(ctx context.Context, wish
 	return err
 }
 
-// ListAllItemsInUserWishlist lists all items in a user's wishlist
-func (r *SQLWishlistRepository) ListAllItemsInUserWishlist(ctx context.Context, userId uuid.UUID, offset int32, limit int32) (interface{}, error) {
-	// list all items in user's wishlist from database
-	items, err := r.DB.ListAllItemsInUserWishlist(ctx, database.ListAllItemsInUserWishlistParams{
-		UserID: userId,
-		Offset: offset,
-		Limit:  limit,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// return items
-	return items, nil
-}
+//// ListAllItemsInUserWishlist lists all items in a user's wishlist
+//func (r *SQLWishlistRepository) ListAllItemsInUserWishlist(ctx context.Context, userId uuid.UUID, offset int32, limit int32) (interface{}, error) {
+//	// list all items in user's wishlist from database
+//	items, err := r.DB.ListAllItemsInUserWishlist(ctx, database.ListAllItemsInUserWishlistParams{
+//		UserID: userId,
+//		Offset: offset,
+//		Limit:  limit,
+//	})
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	// return items
+//	return items, nil
+//}
 
 // TrackInterestInWishlistItem tracks interest in a wishlist item
 func (r *SQLWishlistRepository) TrackInterestInWishlistItem(ctx context.Context) ([]model.InterestCount, error) {

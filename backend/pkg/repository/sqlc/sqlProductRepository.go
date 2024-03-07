@@ -23,16 +23,16 @@ func NewSQLProductRepository(db *database.Queries) *SQLProductRepository {
 // AddProduct creates a new product in the database
 func (r *SQLProductRepository) AddProduct(ctx context.Context, product model.AddProductParams) (model.Product, error) {
 	// Add product into database
-	addProduct, err := r.DB.AddProduct(ctx, database.AddProductParams{
-		ID:          uuid.New(),
-		Name:        product.Name,
-		Description: product.Description,
-		ImageUrl:    product.ImageUrl,
-		Price:       product.Price,
-		Stock:       product.Stock,
-		CategoryID:  product.CategoryID,
-		Brand:       product.Brand,
-		Keywords:    product.Keywords,
+	addProduct, err := r.DB.CreateProduct(ctx, database.CreateProductParams{
+		ID:            uuid.New(),
+		Name:          product.Name,
+		Description:   product.Description,
+		ImageUrl:      product.ImageUrl,
+		Price:         product.Price,
+		Stock:         product.Stock,
+		SubCategoryID: product.SubCategoryID,
+		Brand:         product.Brand,
+		Keywords:      product.Keywords,
 	})
 	if err != nil {
 		return model.Product{}, err
@@ -40,40 +40,40 @@ func (r *SQLProductRepository) AddProduct(ctx context.Context, product model.Add
 
 	// Return newly added product
 	return model.Product{
-		ID:           addProduct.ID,
-		Name:         addProduct.Name,
-		Description:  addProduct.Description,
-		ImageUrl:     addProduct.ImageUrl,
-		Price:        addProduct.Price,
-		Stock:        addProduct.Stock,
-		CategoryID:   addProduct.CategoryID,
-		Brand:        addProduct.Brand,
-		Rating:       addProduct.Rating,
-		ReviewCount:  addProduct.ReviewCount,
-		DiscountRate: addProduct.DiscountRate,
-		Keywords:     addProduct.Keywords,
-		IsActive:     addProduct.IsActive,
-		CreatedAt:    addProduct.CreatedAt,
-		LastUpdated:  addProduct.LastUpdated,
+		ID:            addProduct.ID,
+		Name:          addProduct.Name,
+		Description:   addProduct.Description,
+		ImageUrl:      addProduct.ImageUrl,
+		Price:         addProduct.Price,
+		Stock:         addProduct.Stock,
+		SubCategoryID: addProduct.SubCategoryID,
+		Brand:         addProduct.Brand,
+		Rating:        addProduct.Rating,
+		ReviewCount:   addProduct.ReviewCount,
+		DiscountRate:  addProduct.DiscountRate,
+		Keywords:      addProduct.Keywords,
+		IsActive:      addProduct.IsActive,
+		CreatedAt:     addProduct.CreatedAt,
+		LastUpdated:   addProduct.LastUpdated,
 	}, err
 }
 
 // Updates an already existing product in the database
 func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product database.UpdateProductParams) (database.Product, error) {
 	updatedProduct, err := r.DB.UpdateProduct(ctx, database.UpdateProductParams{
-		ID:           product.ID,
-		Name:         product.Name,
-		Description:  product.Description,
-		ImageUrl:     product.ImageUrl,
-		Price:        product.Price,
-		Stock:        product.Stock,
-		CategoryID:   product.CategoryID,
-		Brand:        product.Brand,
-		Rating:       product.Rating,
-		ReviewCount:  product.ReviewCount,
-		DiscountRate: product.DiscountRate,
-		Keywords:     product.Keywords,
-		IsActive:     product.IsActive,
+		ID:            product.ID,
+		Name:          product.Name,
+		Description:   product.Description,
+		ImageUrl:      product.ImageUrl,
+		Price:         product.Price,
+		Stock:         product.Stock,
+		SubCategoryID: product.SubCategoryID,
+		Brand:         product.Brand,
+		Rating:        product.Rating,
+		ReviewCount:   product.ReviewCount,
+		DiscountRate:  product.DiscountRate,
+		Keywords:      product.Keywords,
+		IsActive:      product.IsActive,
 	})
 
 	if err != nil {
@@ -83,21 +83,21 @@ func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product databa
 
 	// Return updated Product
 	return database.Product{
-		ID:           updatedProduct.ID,
-		Name:         updatedProduct.Name,
-		Description:  updatedProduct.Description,
-		ImageUrl:     updatedProduct.ImageUrl,
-		Price:        updatedProduct.Price,
-		Stock:        updatedProduct.Stock,
-		CategoryID:   updatedProduct.CategoryID,
-		Brand:        updatedProduct.Brand,
-		Rating:       updatedProduct.Rating,
-		ReviewCount:  updatedProduct.ReviewCount,
-		DiscountRate: updatedProduct.DiscountRate,
-		Keywords:     updatedProduct.Keywords,
-		IsActive:     updatedProduct.IsActive,
-		CreatedAt:    updatedProduct.CreatedAt,
-		LastUpdated:  updatedProduct.LastUpdated,
+		ID:            updatedProduct.ID,
+		Name:          updatedProduct.Name,
+		Description:   updatedProduct.Description,
+		ImageUrl:      updatedProduct.ImageUrl,
+		Price:         updatedProduct.Price,
+		Stock:         updatedProduct.Stock,
+		SubCategoryID: updatedProduct.SubCategoryID,
+		Brand:         updatedProduct.Brand,
+		Rating:        updatedProduct.Rating,
+		ReviewCount:   updatedProduct.ReviewCount,
+		DiscountRate:  updatedProduct.DiscountRate,
+		Keywords:      updatedProduct.Keywords,
+		IsActive:      updatedProduct.IsActive,
+		CreatedAt:     updatedProduct.CreatedAt,
+		LastUpdated:   updatedProduct.LastUpdated,
 	}, err
 }
 
@@ -129,26 +129,6 @@ func (r *SQLProductRepository) GetAvailableProducts(ctx context.Context) ([]data
 	return availableProducts, nil
 }
 
-// GetFilteredProducts implements repository.ProductRepository.
-func (r *SQLProductRepository) GetFilteredProducts(ctx context.Context, arg database.GetFilteredProductsParams) ([]database.Product, error) {
-	filteredProducts, err := r.DB.GetFilteredProducts(ctx, arg)
-	if err != nil {
-		log.Printf("Error fetching filtered products with args%s, %s: %s", arg.CategoryID.String(), arg.Price, err.Error())
-		return []database.Product{}, err
-	}
-	return filteredProducts, nil
-}
-
-// GetPaginatedProducts implements repository.ProductRepository.
-func (r *SQLProductRepository) GetPaginatedProducts(ctx context.Context, arg database.GetPaginatedProductsParams) ([]database.Product, error) {
-	paginatedProducts, err := r.DB.GetPaginatedProducts(ctx, arg)
-	if err != nil {
-		log.Printf("Error fetching paginated products with args %d, %d: %s", arg.Limit, arg.Offset, err.Error())
-		return []database.Product{}, err
-	}
-	return paginatedProducts, nil
-}
-
 // GetProductById implements repository.ProductRepository.
 func (r *SQLProductRepository) GetProductById(ctx context.Context, id uuid.UUID) (database.Product, error) {
 	product, err := r.DB.GetProductById(ctx, id)
@@ -159,19 +139,12 @@ func (r *SQLProductRepository) GetProductById(ctx context.Context, id uuid.UUID)
 	return product, nil
 }
 
-// GetProductWithRecommendations implements repository.ProductRepository.
-func (r *SQLProductRepository) GetProductWithRecommendations(ctx context.Context, id uuid.UUID) (database.GetProductWithRecommendationsRow, error) {
-	recommendedProduct, err := r.DB.GetProductWithRecommendations(ctx, id)
-	if err != nil {
-		log.Printf("Error fetching recommended products with reference product id %s: %s", id.String(), err.Error())
-		return database.GetProductWithRecommendationsRow{}, err
-	}
-	return recommendedProduct, nil
-}
-
 // GetProducts implements repository.ProductRepository.
-func (r *SQLProductRepository) GetProducts(ctx context.Context) ([]database.Product, error) {
-	products, err := r.DB.GetProducts(ctx)
+func (r *SQLProductRepository) GetProducts(ctx context.Context, offset int32, limit int32) (interface{}, error) {
+	products, err := r.DB.GetProducts(ctx, database.GetProductsParams{
+		Offset: offset,
+		Limit:  limit,
+	})
 	if err != nil {
 		log.Printf("Error fetching all products in the database : %s", err.Error())
 		return []database.Product{}, err
@@ -180,8 +153,10 @@ func (r *SQLProductRepository) GetProducts(ctx context.Context) ([]database.Prod
 }
 
 // GetProductsByCategory implements repository.ProductRepository.
-func (r *SQLProductRepository) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]database.Product, error) {
-	categorizedProducts, err := r.DB.GetProductsByCategory(ctx, categoryID)
+func (r *SQLProductRepository) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) (interface{}, error) {
+	categorizedProducts, err := r.DB.GetProductsByCategory(ctx, database.GetProductsByCategoryParams{
+		ID: categoryID,
+	})
 	if err != nil {
 		log.Printf("Error fetching categorized products with category id %s: %s", categoryID.String(), err.Error())
 		return []database.Product{}, err
@@ -231,4 +206,24 @@ func (r *SQLProductRepository) GetTrendingProducts(ctx context.Context) ([]model
 	}
 
 	return modelTrendingProducts, nil
+}
+
+// GetProductCountByCategory implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProductCountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error) {
+	productCount, err := r.DB.GetProductCountByCategory(ctx, categoryID)
+	if err != nil {
+		log.Printf("Error fetching product count by category id %s: %s", categoryID.String(), err.Error())
+		return 0, err
+	}
+	return productCount, nil
+}
+
+// GetProductCount implements repository.ProductRepository.
+func (r *SQLProductRepository) GetProductCount(ctx context.Context) (int64, error) {
+	productCount, err := r.DB.GetProductCount(ctx)
+	if err != nil {
+		log.Printf("Error fetching product count : %s", err.Error())
+		return 0, err
+	}
+	return productCount, nil
 }

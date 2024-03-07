@@ -65,21 +65,21 @@ type OrderItem struct {
 }
 
 type Product struct {
-	ID           uuid.UUID
-	Name         string
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	Price        string
-	Stock        int32
-	CategoryID   uuid.UUID
-	Brand        sql.NullString
-	Rating       string
-	ReviewCount  int32
-	DiscountRate string
-	Keywords     sql.NullString
-	IsActive     bool
-	CreatedAt    time.Time
-	LastUpdated  sql.NullTime
+	ID            uuid.UUID
+	Name          string
+	Description   sql.NullString
+	ImageUrl      sql.NullString
+	Price         string
+	Stock         int32
+	Brand         sql.NullString
+	Rating        string
+	ReviewCount   int32
+	DiscountRate  string
+	Keywords      sql.NullString
+	IsActive      bool
+	CreatedAt     time.Time
+	LastUpdated   sql.NullTime
+	SubCategoryID uuid.NullUUID
 }
 
 type RecentlyViewedProduct struct {
@@ -124,6 +124,18 @@ type ShoppingCart struct {
 	LastUpdated sql.NullTime
 	TotalItems  int32
 	TotalPrice  string
+}
+
+type SubCategory struct {
+	ID          uuid.UUID
+	CategoryID  uuid.UUID
+	Name        string
+	Description sql.NullString
+	ImageUrl    sql.NullString
+	SeoKeywords sql.NullString
+	IsActive    bool
+	CreatedAt   time.Time
+	LastUpdated sql.NullTime
 }
 
 type User struct {

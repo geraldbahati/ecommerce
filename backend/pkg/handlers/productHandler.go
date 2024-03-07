@@ -20,7 +20,14 @@ func NewProductHandler(productService *usecases.ProductService) *ProductHandler 
 }
 
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
-	products, err := h.productService.GetProducts(r.Context())
+	// get page and page size
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page_size")
+
+	// get page and page size
+	page, pageSize, err := GetPageAndPageSize(pageStr, pageSizeStr)
+
+	products, err := h.productService.GetProducts(r.Context(), pageSize, page)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Error fetching products from the database.")
 		return
@@ -32,14 +39,14 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	// Parameters
 	var params struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		ImageUrl    string `json:"image_url"`
-		Price       string `json:"price"`
-		Stock       int32  `json:"stock"`
-		CategoryID  string `json:"category_id"`
-		Brand       string `json:"brand"`
-		Keywords    string `json:"keywords"`
+		Name          string `json:"name"`
+		Description   string `json:"description"`
+		ImageUrl      string `json:"image_url"`
+		Price         string `json:"price"`
+		Stock         int32  `json:"stock"`
+		SubCategoryID string `json:"sub_category_id"`
+		Brand         string `json:"brand"`
+		Keywords      string `json:"keywords"`
 	}
 
 	// Decoding request body
@@ -48,7 +55,7 @@ func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add product
-	product, err := h.productService.AddProduct(r.Context(), params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.CategoryID, params.Brand, params.Keywords)
+	product, err := h.productService.AddProduct(r.Context(), params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.SubCategoryID, params.Brand, params.Keywords)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to add new product: %v", err))
 		return
@@ -58,40 +65,40 @@ func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, product)
 }
 
-func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	// Parameters
-	var params struct {
-		ID           uuid.UUID      `json:"id"`
-		Name         string         `json:"name"`
-		Description  sql.NullString `json:"description"`
-		ImageUrl     sql.NullString `json:"image_url"`
-		Price        string         `json:"price"`
-		Stock        int32          `json:"stock"`
-		CategoryID   uuid.UUID      `json:"category_id"`
-		Brand        sql.NullString `json:"brand"`
-		Rating       string         `json:"rating"`
-		ReviewCount  int32          `json:"review_count"`
-		DiscountRate string         `json:"discount_rate"`
-		Keywords     sql.NullString `json:"keywords"`
-		IsActive     bool           `json:"is_active"`
-	}
-
-	// Decoding request body
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		RespondWithError(w, http.StatusBadRequest, fmt.Sprint("Failed to decode request body: %v", err))
-		return
-	}
-
-	// Update product
-	product, err := h.productService.UpdateProduct(r.Context(), params.ID, params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.CategoryID, params.Brand, params.Rating, params.ReviewCount, params.DiscountRate, params.Keywords, params.IsActive)
-	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update user: %v", err))
-		return
-	}
-
-	// Respond with updated product
-	RespondWithJSON(w, http.StatusOK, product)
-}
+//func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+//	// Parameters
+//	var params struct {
+//		ID           uuid.UUID      `json:"id"`
+//		Name         string         `json:"name"`
+//		Description  sql.NullString `json:"description"`
+//		ImageUrl     sql.NullString `json:"image_url"`
+//		Price        string         `json:"price"`
+//		Stock        int32          `json:"stock"`
+//		CategoryID   uuid.UUID      `json:"category_id"`
+//		Brand        sql.NullString `json:"brand"`
+//		Rating       string         `json:"rating"`
+//		ReviewCount  int32          `json:"review_count"`
+//		DiscountRate string         `json:"discount_rate"`
+//		Keywords     sql.NullString `json:"keywords"`
+//		IsActive     bool           `json:"is_active"`
+//	}
+//
+//	// Decoding request body
+//	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+//		RespondWithError(w, http.StatusBadRequest, fmt.Sprint("Failed to decode request body: %v", err))
+//		return
+//	}
+//
+//	// Update product
+//	product, err := h.productService.UpdateProduct(r.Context(), params.ID, params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.CategoryID, params.Brand, params.Rating, params.ReviewCount, params.DiscountRate, params.Keywords, params.IsActive)
+//	if err != nil {
+//		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update user: %v", err))
+//		return
+//	}
+//
+//	// Respond with updated product
+//	RespondWithJSON(w, http.StatusOK, product)
+//}
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	var params struct {
@@ -148,93 +155,21 @@ func (h *ProductHandler) GetProductById(w http.ResponseWriter, r *http.Request) 
 	RespondWithJSON(w, http.StatusOK, product)
 }
 
-func (h *ProductHandler) GetFilteredProducts(w http.ResponseWriter, r *http.Request) {
-	// Parameters
-	var params struct {
-		CategoryID uuid.UUID `json:"category_id"`
-		Price      string    `json:"price"`
-	}
-
-	// Decoding the request body
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body:%v", err))
-		return
-	}
-
-	// Fetching filtered products
-	filteredProducts, err := h.productService.GetFilteredProducts(r.Context(), params.CategoryID, params.Price)
-	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching products with filter queries; %v, %v: %v", params.CategoryID.String(), params.Price, err))
-		return
-	}
-
-	// Respond with filtered products
-	RespondWithJSON(w, http.StatusOK, filteredProducts)
-}
-
-func (h *ProductHandler) GetPaginatedProducts(w http.ResponseWriter, r *http.Request) {
-	// Parameters
-	var params struct {
-		Offset int32 `json:"offset"`
-		LIMIT  int32 `json:"limit"`
-	}
-
-	// Decoding request body
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body:%v", err))
-		return
-	}
-
-	// Fetching paginated products
-	paginatedProducts, err := h.productService.GetPaginatedProducts(r.Context(), params.Offset, params.LIMIT)
-	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching products with applied paginations; %v, %v: %v", params.Offset, params.LIMIT, err))
-		return
-	}
-
-	// Respond with paginated results
-	RespondWithJSON(w, http.StatusOK, paginatedProducts)
-}
-
-func (h *ProductHandler) GetProductWithRecommendations(w http.ResponseWriter, r *http.Request) {
-	// Parameters
-	var params struct {
-		ID uuid.UUID `json:"id"`
-	}
-
-	// Decode request body
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error decoding request body: %v", err))
-		return
-	}
-
-	// Fetch products based on recommendations
-	recommendedProducts, err := h.productService.GetProductWithRecommendations(r.Context(), params.ID)
-	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch recommended products based on product with id %v: %v", params.ID.String(), err))
-		return
-	}
-
-	// Respond with recommended products
-	RespondWithJSON(w, http.StatusOK, recommendedProducts)
-}
-
 func (h *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
 	// Parameters
-	var params struct {
-		CategoryID uuid.UUID `json:"category_id"`
-	}
+	categoryIdStr := r.URL.Query().Get("category_id")
 
-	// Decode request body
-	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Error decoding request body: %v", err))
-		return
-	}
+	// get page and page size
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page_size")
+
+	// get page and page size
+	page, pageSize, err := GetPageAndPageSize(pageStr, pageSizeStr)
 
 	// Fetch products based on category
-	categorizedProducts, err := h.productService.GetProductsByCategory(r.Context(), params.CategoryID)
+	categorizedProducts, err := h.productService.GetProductsByCategory(r.Context(), categoryIdStr, pageSize, page)
 	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch products based on category with id %v: %v", params.CategoryID.String(), err))
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching products based on category id %v: %v", categoryIdStr, err))
 		return
 	}
 

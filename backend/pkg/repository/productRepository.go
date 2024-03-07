@@ -14,25 +14,23 @@ type ProductRepository interface {
 	AddProduct(ctx context.Context, product model.AddProductParams) (model.Product, error)
 
 	// Update product
-	UpdateProduct(ctx context.Context, arg database.UpdateProductParams) (database.Product, error)
+	UpdateProduct(ctx context.Context, product database.UpdateProductParams) (database.Product, error)
 
 	// Delete Product
 	DeleteProduct(ctx context.Context, productID uuid.UUID) error
 
 	// Get Product methods
-	GetProducts(ctx context.Context) ([]database.Product, error)
+	GetProducts(ctx context.Context, offset int32, limit int32) (interface{}, error)
 
 	GetAvailableProducts(ctx context.Context) ([]database.Product, error)
 
-	GetFilteredProducts(ctx context.Context, arg database.GetFilteredProductsParams) ([]database.Product, error)
-
-	GetPaginatedProducts(ctx context.Context, arg database.GetPaginatedProductsParams) ([]database.Product, error)
-
-	GetProductWithRecommendations(ctx context.Context, id uuid.UUID) (database.GetProductWithRecommendationsRow, error)
-
 	GetProductById(ctx context.Context, id uuid.UUID) (database.Product, error)
 
-	GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]database.Product, error)
+	GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) (interface{}, error)
+
+	GetProductCountByCategory(ctx context.Context, categoryID uuid.UUID) (int64, error)
+
+	GetProductCount(ctx context.Context) (int64, error)
 
 	GetTrendingProducts(ctx context.Context) ([]model.TrendingProduct, error)
 

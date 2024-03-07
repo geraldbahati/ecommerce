@@ -7,7 +7,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -124,59 +123,6 @@ func (q *Queries) GetEmailsOfUsersWithWishlistItems(ctx context.Context, product
 			return nil, err
 		}
 		items = append(items, email)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listAllItemsInUserWishlist = `-- name: ListAllItemsInUserWishlist :many
-SELECT p.id, p.name, p.description, p.image_url, p.category_id
-FROM products p
-JOIN wishlist_items wi ON p.id = wi.product_id
-JOIN wishlists w ON wi.wishlist_id = w.id
-WHERE w.user_id = $1
-ORDER BY wi.created_at DESC
-LIMIT $2 OFFSET $3
-`
-
-type ListAllItemsInUserWishlistParams struct {
-	UserID uuid.UUID
-	Limit  int32
-	Offset int32
-}
-
-type ListAllItemsInUserWishlistRow struct {
-	ID          uuid.UUID
-	Name        string
-	Description sql.NullString
-	ImageUrl    sql.NullString
-	CategoryID  uuid.UUID
-}
-
-func (q *Queries) ListAllItemsInUserWishlist(ctx context.Context, arg ListAllItemsInUserWishlistParams) ([]ListAllItemsInUserWishlistRow, error) {
-	rows, err := q.db.QueryContext(ctx, listAllItemsInUserWishlist, arg.UserID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListAllItemsInUserWishlistRow
-	for rows.Next() {
-		var i ListAllItemsInUserWishlistRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.CategoryID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
