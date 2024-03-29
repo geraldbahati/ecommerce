@@ -8,49 +8,92 @@ package database
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-const addProduct = `-- name: AddProduct :one
-INSERT INTO products (id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NULL)
-RETURNING id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated
+const checkProductStock = `-- name: CheckProductStock :many
+SELECT id FROM products
+WHERE stock > 0
+AND (last_updated > NOW() - INTERVAL '1 DAY')
 `
 
-type AddProductParams struct {
-	ID           uuid.UUID
-	Name         string
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	Price        string
-	Stock        int32
-	CategoryID   uuid.UUID
-	Brand        sql.NullString
-	Rating       string
-	ReviewCount  int32
-	DiscountRate string
-	Keywords     sql.NullString
-	IsActive     bool
+func (q *Queries) CheckProductStock(ctx context.Context) ([]uuid.UUID, error) {
+	rows, err := q.db.QueryContext(ctx, checkProductStock)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product, error) {
-	row := q.db.QueryRowContext(ctx, addProduct,
+const createProduct = `-- name: CreateProduct :one
+
+INSERT INTO products (id, name, description, image_url, price, stock, sub_category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0.0, 0, 0.0, $9, TRUE, NOW(), NULL)
+RETURNING id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id
+`
+
+type CreateProductParams struct {
+	ID            uuid.UUID
+	Name          string
+	Description   sql.NullString
+	ImageUrl      sql.NullString
+	Price         string
+	Stock         int32
+	SubCategoryID uuid.NullUUID
+	Brand         sql.NullString
+	Keywords      sql.NullString
+}
+
+// Product structure changes
+// CREATE TABLE products (
+// id UUID PRIMARY KEY,
+//
+//	name VARCHAR(50) NOT NULL,
+//	description VARCHAR(255) NULL,
+//	image_url VARCHAR(100) NULL,
+//	price DECIMAL(10, 2) NOT NULL,
+//	stock INT NOT NULL,
+//	sub_category_id UUID NOT NULL,
+//	brand VARCHAR(50) NULL,
+//	rating DECIMAL(2, 1) NOT NULL DEFAULT 0.0,
+//	review_count INT NOT NULL DEFAULT 0,
+//	discount_rate DECIMAL(2, 1) NOT NULL DEFAULT 0.0,
+//	keywords VARCHAR(100) NULL,
+//	is_active BOOLEAN NOT NULL DEFAULT TRUE,
+//	created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+//	last_updated TIMESTAMP NULL,
+//	FOREIGN KEY (sub_category_id) REFERENCES categories (id) ON DELETE CASCADE,
+//	UNIQUE (name)
+//
+// );
+func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
+	row := q.db.QueryRowContext(ctx, createProduct,
 		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.ImageUrl,
 		arg.Price,
 		arg.Stock,
-		arg.CategoryID,
+		arg.SubCategoryID,
 		arg.Brand,
-		arg.Rating,
-		arg.ReviewCount,
-		arg.DiscountRate,
 		arg.Keywords,
-		arg.IsActive,
 	)
 	var i Product
 	err := row.Scan(
@@ -60,7 +103,6 @@ func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product
 		&i.ImageUrl,
 		&i.Price,
 		&i.Stock,
-		&i.CategoryID,
 		&i.Brand,
 		&i.Rating,
 		&i.ReviewCount,
@@ -69,6 +111,7 @@ func (q *Queries) AddProduct(ctx context.Context, arg AddProductParams) (Product
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.LastUpdated,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
@@ -77,7 +120,6 @@ const deleteProduct = `-- name: DeleteProduct :exec
 UPDATE products SET
     is_active = FALSE
 WHERE id = $1
-RETURNING id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated
 `
 
 func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
@@ -86,7 +128,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAvailableProducts = `-- name: GetAvailableProducts :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
+SELECT id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id FROM products
 WHERE stock > 0 AND is_active = TRUE
 `
 
@@ -106,7 +148,6 @@ func (q *Queries) GetAvailableProducts(ctx context.Context) ([]Product, error) {
 			&i.ImageUrl,
 			&i.Price,
 			&i.Stock,
-			&i.CategoryID,
 			&i.Brand,
 			&i.Rating,
 			&i.ReviewCount,
@@ -115,105 +156,7 @@ func (q *Queries) GetAvailableProducts(ctx context.Context) ([]Product, error) {
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.LastUpdated,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getFilteredProducts = `-- name: GetFilteredProducts :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
-WHERE category_id = $1 AND price <= $2
-`
-
-type GetFilteredProductsParams struct {
-	CategoryID uuid.UUID
-	Price      string
-}
-
-func (q *Queries) GetFilteredProducts(ctx context.Context, arg GetFilteredProductsParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getFilteredProducts, arg.CategoryID, arg.Price)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Product
-	for rows.Next() {
-		var i Product
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Price,
-			&i.Stock,
-			&i.CategoryID,
-			&i.Brand,
-			&i.Rating,
-			&i.ReviewCount,
-			&i.DiscountRate,
-			&i.Keywords,
-			&i.IsActive,
-			&i.CreatedAt,
-			&i.LastUpdated,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPaginatedProducts = `-- name: GetPaginatedProducts :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
-ORDER BY created_at DESC
-OFFSET $1 LIMIT $2
-`
-
-type GetPaginatedProductsParams struct {
-	Offset int32
-	Limit  int32
-}
-
-func (q *Queries) GetPaginatedProducts(ctx context.Context, arg GetPaginatedProductsParams) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getPaginatedProducts, arg.Offset, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Product
-	for rows.Next() {
-		var i Product
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.ImageUrl,
-			&i.Price,
-			&i.Stock,
-			&i.CategoryID,
-			&i.Brand,
-			&i.Rating,
-			&i.ReviewCount,
-			&i.DiscountRate,
-			&i.Keywords,
-			&i.IsActive,
-			&i.CreatedAt,
-			&i.LastUpdated,
+			&i.SubCategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -229,7 +172,7 @@ func (q *Queries) GetPaginatedProducts(ctx context.Context, arg GetPaginatedProd
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
+SELECT id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id FROM products
 WHERE id = $1
 `
 
@@ -243,7 +186,6 @@ func (q *Queries) GetProductById(ctx context.Context, id uuid.UUID) (Product, er
 		&i.ImageUrl,
 		&i.Price,
 		&i.Stock,
-		&i.CategoryID,
 		&i.Brand,
 		&i.Rating,
 		&i.ReviewCount,
@@ -252,74 +194,50 @@ func (q *Queries) GetProductById(ctx context.Context, id uuid.UUID) (Product, er
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.LastUpdated,
+		&i.SubCategoryID,
 	)
 	return i, err
 }
 
-const getProductWithRecommendations = `-- name: GetProductWithRecommendations :one
-WITH current_product AS (
-    SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products WHERE products.id = $1
-)
-SELECT cp.id, cp.name, cp.description, cp.image_url, cp.price, cp.stock, cp.category_id, cp.brand, cp.rating, cp.review_count, cp.discount_rate, cp.keywords, cp.is_active, cp.created_at, cp.last_updated,
-    (
-        SELECT jsonb_agg(jsonb_build_object('id',  rec.id, 'name',rec.name, 'price',rec.price))
-        FROM products rec
-        WHERE rec.category_id = cp.category_id AND rec.id != cp.id
-        ORDER BY random()
-        LIMIT 5
-    ) AS recommendations
-FROM current_product cp
+const getProductCount = `-- name: GetProductCount :one
+SELECT COUNT(*) FROM products
 `
 
-type GetProductWithRecommendationsRow struct {
-	ID              uuid.UUID
-	Name            string
-	Description     sql.NullString
-	ImageUrl        sql.NullString
-	Price           string
-	Stock           int32
-	CategoryID      uuid.UUID
-	Brand           sql.NullString
-	Rating          string
-	ReviewCount     int32
-	DiscountRate    string
-	Keywords        sql.NullString
-	IsActive        bool
-	CreatedAt       time.Time
-	LastUpdated     sql.NullTime
-	Recommendations json.RawMessage
+func (q *Queries) GetProductCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getProductCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
-func (q *Queries) GetProductWithRecommendations(ctx context.Context, id uuid.UUID) (GetProductWithRecommendationsRow, error) {
-	row := q.db.QueryRowContext(ctx, getProductWithRecommendations, id)
-	var i GetProductWithRecommendationsRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.ImageUrl,
-		&i.Price,
-		&i.Stock,
-		&i.CategoryID,
-		&i.Brand,
-		&i.Rating,
-		&i.ReviewCount,
-		&i.DiscountRate,
-		&i.Keywords,
-		&i.IsActive,
-		&i.CreatedAt,
-		&i.LastUpdated,
-		&i.Recommendations,
-	)
-	return i, err
+const getProductCountByCategory = `-- name: GetProductCountByCategory :one
+SELECT COUNT(*)
+FROM products p
+    INNER JOIN sub_categories sc ON p.sub_category_id = sc.id
+    INNER JOIN categories c ON sc.category_id = c.id
+WHERE c.id = $1
+`
+
+func (q *Queries) GetProductCountByCategory(ctx context.Context, id uuid.UUID) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getProductCountByCategory, id)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
+SELECT id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id FROM products
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getProducts)
+type GetProductsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, getProducts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -334,7 +252,6 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.ImageUrl,
 			&i.Price,
 			&i.Stock,
-			&i.CategoryID,
 			&i.Brand,
 			&i.Rating,
 			&i.ReviewCount,
@@ -343,6 +260,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.LastUpdated,
+			&i.SubCategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -358,19 +276,50 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 }
 
 const getProductsByCategory = `-- name: GetProductsByCategory :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
-WHERE category_id = $1
+SELECT p.id, p.name, p.description, p.image_url, p.price, p.stock, p.brand, p.rating, p.review_count, p.discount_rate, p.keywords, p.is_active, p.created_at, p.last_updated, p.sub_category_id, sc.name AS sub_category_name, c.name AS category_name
+FROM products p
+    INNER JOIN sub_categories sc ON p.sub_category_id = sc.id
+    INNER JOIN categories c ON sc.category_id = c.id
+WHERE c.id = $1
+ORDER BY p.created_at DESC
+LIMIT $2 OFFSET $3
 `
 
-func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, getProductsByCategory, categoryID)
+type GetProductsByCategoryParams struct {
+	ID     uuid.UUID
+	Limit  int32
+	Offset int32
+}
+
+type GetProductsByCategoryRow struct {
+	ID              uuid.UUID
+	Name            string
+	Description     sql.NullString
+	ImageUrl        sql.NullString
+	Price           string
+	Stock           int32
+	Brand           sql.NullString
+	Rating          string
+	ReviewCount     int32
+	DiscountRate    string
+	Keywords        sql.NullString
+	IsActive        bool
+	CreatedAt       time.Time
+	LastUpdated     sql.NullTime
+	SubCategoryID   uuid.NullUUID
+	SubCategoryName string
+	CategoryName    string
+}
+
+func (q *Queries) GetProductsByCategory(ctx context.Context, arg GetProductsByCategoryParams) ([]GetProductsByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getProductsByCategory, arg.ID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	var items []GetProductsByCategoryRow
 	for rows.Next() {
-		var i Product
+		var i GetProductsByCategoryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
@@ -378,7 +327,6 @@ func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID uuid.UUI
 			&i.ImageUrl,
 			&i.Price,
 			&i.Stock,
-			&i.CategoryID,
 			&i.Brand,
 			&i.Rating,
 			&i.ReviewCount,
@@ -387,6 +335,9 @@ func (q *Queries) GetProductsByCategory(ctx context.Context, categoryID uuid.UUI
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.LastUpdated,
+			&i.SubCategoryID,
+			&i.SubCategoryName,
+			&i.CategoryName,
 		); err != nil {
 			return nil, err
 		}
@@ -436,8 +387,163 @@ func (q *Queries) GetSalesTrends(ctx context.Context) ([]GetSalesTrendsRow, erro
 	return items, nil
 }
 
+const getTrendingProducts = `-- name: GetTrendingProducts :many
+WITH TrendingProducts AS (
+    SELECT
+        sc.category_id,
+        p.id AS product_id,
+        SUM(oi.quantity) AS sales_volume
+    FROM
+        order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+            JOIN sub_categories sc ON p.sub_category_id = sc.id
+    WHERE
+        o.created_at > NOW() - INTERVAL '1 month'
+GROUP BY
+    sc.category_id, p.id
+    )
+SELECT
+    tp.product_id,
+    p.name AS product_name,
+    p.price,
+    sc.id AS sub_category_id,
+    sc.name AS sub_category_name,
+    c.id AS category_id,
+    c.name AS category_name,
+    tp.sales_volume
+FROM
+    TrendingProducts tp
+        JOIN products p ON tp.product_id = p.id
+        JOIN sub_categories sc ON p.sub_category_id = sc.id
+        JOIN categories c ON sc.category_id = c.id
+ORDER BY
+    c.name, tp.sales_volume DESC
+`
+
+type GetTrendingProductsRow struct {
+	ProductID       uuid.UUID
+	ProductName     string
+	Price           string
+	SubCategoryID   uuid.UUID
+	SubCategoryName string
+	CategoryID      uuid.UUID
+	CategoryName    string
+	SalesVolume     int64
+}
+
+func (q *Queries) GetTrendingProducts(ctx context.Context) ([]GetTrendingProductsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrendingProducts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTrendingProductsRow
+	for rows.Next() {
+		var i GetTrendingProductsRow
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductName,
+			&i.Price,
+			&i.SubCategoryID,
+			&i.SubCategoryName,
+			&i.CategoryID,
+			&i.CategoryName,
+			&i.SalesVolume,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTrendingProductsByCategory = `-- name: GetTrendingProductsByCategory :many
+WITH TrendingProducts AS (
+    SELECT
+        sc.category_id,
+        p.id AS product_id,
+        SUM(oi.quantity) AS sales_volume
+    FROM
+        order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+            JOIN sub_categories sc ON p.sub_category_id = sc.id
+    WHERE
+        o.created_at > NOW() - INTERVAL '1 month'
+    AND sc.category_id = $1
+GROUP BY
+    sc.category_id, p.id
+    )
+SELECT
+    tp.product_id,
+    p.name AS product_name,
+    p.price,
+    sc.id AS sub_category_id,
+    sc.name AS sub_category_name,
+    c.id AS category_id,
+    c.name AS category_name,
+    tp.sales_volume
+FROM
+    TrendingProducts tp
+        JOIN products p ON tp.product_id = p.id
+        JOIN sub_categories sc ON p.sub_category_id = sc.id
+        JOIN categories c ON sc.category_id = c.id
+ORDER BY
+    tp.sales_volume DESC
+`
+
+type GetTrendingProductsByCategoryRow struct {
+	ProductID       uuid.UUID
+	ProductName     string
+	Price           string
+	SubCategoryID   uuid.UUID
+	SubCategoryName string
+	CategoryID      uuid.UUID
+	CategoryName    string
+	SalesVolume     int64
+}
+
+func (q *Queries) GetTrendingProductsByCategory(ctx context.Context, categoryID uuid.UUID) ([]GetTrendingProductsByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTrendingProductsByCategory, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTrendingProductsByCategoryRow
+	for rows.Next() {
+		var i GetTrendingProductsByCategoryRow
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductName,
+			&i.Price,
+			&i.SubCategoryID,
+			&i.SubCategoryName,
+			&i.CategoryID,
+			&i.CategoryName,
+			&i.SalesVolume,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchProducts = `-- name: SearchProducts :many
-SELECT id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated FROM products
+SELECT id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id FROM products
 WHERE name ILIKE '%' || $1 || '%' OR keywords ILIKE '%' || $1 || '%'
 `
 
@@ -457,7 +563,6 @@ func (q *Queries) SearchProducts(ctx context.Context, dollar_1 sql.NullString) (
 			&i.ImageUrl,
 			&i.Price,
 			&i.Stock,
-			&i.CategoryID,
 			&i.Brand,
 			&i.Rating,
 			&i.ReviewCount,
@@ -466,6 +571,7 @@ func (q *Queries) SearchProducts(ctx context.Context, dollar_1 sql.NullString) (
 			&i.IsActive,
 			&i.CreatedAt,
 			&i.LastUpdated,
+			&i.SubCategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -487,7 +593,7 @@ UPDATE products SET
     image_url = $4,
     price = $5,
     stock = $6,
-    category_id = $7,
+    sub_category_id = $7,
     brand = $8,
     rating = $9,
     review_count = $10,
@@ -496,23 +602,23 @@ UPDATE products SET
     is_active = $13,
     last_updated = NOW()
 WHERE id = $1
-RETURNING id, name, description, image_url, price, stock, category_id, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated
+RETURNING id, name, description, image_url, price, stock, brand, rating, review_count, discount_rate, keywords, is_active, created_at, last_updated, sub_category_id
 `
 
 type UpdateProductParams struct {
-	ID           uuid.UUID
-	Name         string
-	Description  sql.NullString
-	ImageUrl     sql.NullString
-	Price        string
-	Stock        int32
-	CategoryID   uuid.UUID
-	Brand        sql.NullString
-	Rating       string
-	ReviewCount  int32
-	DiscountRate string
-	Keywords     sql.NullString
-	IsActive     bool
+	ID            uuid.UUID
+	Name          string
+	Description   sql.NullString
+	ImageUrl      sql.NullString
+	Price         string
+	Stock         int32
+	SubCategoryID uuid.NullUUID
+	Brand         sql.NullString
+	Rating        string
+	ReviewCount   int32
+	DiscountRate  string
+	Keywords      sql.NullString
+	IsActive      bool
 }
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
@@ -523,7 +629,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		arg.ImageUrl,
 		arg.Price,
 		arg.Stock,
-		arg.CategoryID,
+		arg.SubCategoryID,
 		arg.Brand,
 		arg.Rating,
 		arg.ReviewCount,
@@ -539,7 +645,6 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.ImageUrl,
 		&i.Price,
 		&i.Stock,
-		&i.CategoryID,
 		&i.Brand,
 		&i.Rating,
 		&i.ReviewCount,
@@ -548,6 +653,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.IsActive,
 		&i.CreatedAt,
 		&i.LastUpdated,
+		&i.SubCategoryID,
 	)
 	return i, err
 }

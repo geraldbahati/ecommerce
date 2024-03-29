@@ -2,6 +2,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 	"github.com/geraldbahati/ecommerce/internal/database"
 	"github.com/geraldbahati/ecommerce/pkg/model"
 	"github.com/google/uuid"
@@ -138,10 +139,12 @@ func (r *SQLCategoryRepository) GetAllCategories(ctx context.Context, offset int
 // SoftSearchCategoriesByName soft searches categories by name
 func (r *SQLCategoryRepository) SoftSearchCategoriesByName(ctx context.Context, categoryName string, offset int32, limit int32) (interface{}, error) {
 	// soft search categories from database
+	categoryNameValue := sql.NullString{String: categoryName, Valid: true}
+
 	categories, err := r.DB.FindCategoriesBySoftName(ctx, database.FindCategoriesBySoftNameParams{
-		Name:   categoryName,
-		Limit:  limit,
-		Offset: offset,
+		Column1: categoryNameValue,
+		Limit:   limit,
+		Offset:  offset,
 	})
 	if err != nil {
 		return nil, err
