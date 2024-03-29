@@ -41,6 +41,20 @@ type Category struct {
 	LastUpdated sql.NullTime
 }
 
+type Colour struct {
+	ID          uuid.UUID
+	ColourHex   string
+	CreatedAt   time.Time
+	LastUpdated sql.NullTime
+}
+
+type Material struct {
+	ID          uuid.UUID
+	Name        string
+	CreatedAt   time.Time
+	LastUpdated sql.NullTime
+}
+
 type Order struct {
 	ID              uuid.UUID
 	UserID          uuid.UUID
@@ -80,6 +94,22 @@ type Product struct {
 	CreatedAt     time.Time
 	LastUpdated   sql.NullTime
 	SubCategoryID uuid.NullUUID
+}
+
+type ProductColour struct {
+	ID          uuid.UUID
+	ProductID   uuid.UUID
+	ColourID    uuid.UUID
+	CreatedAt   time.Time
+	LastUpdated sql.NullTime
+}
+
+type ProductMaterial struct {
+	ID          uuid.UUID
+	ProductID   uuid.UUID
+	MaterialID  uuid.UUID
+	CreatedAt   time.Time
+	LastUpdated sql.NullTime
 }
 
 type RecentlyViewedProduct struct {

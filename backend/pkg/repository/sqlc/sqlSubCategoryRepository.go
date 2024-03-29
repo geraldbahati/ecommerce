@@ -97,6 +97,7 @@ func (r *SQLSubCategoryRepository) GetProductBySubCategory(ctx context.Context, 
 		Limit:         limit,
 	})
 	if err != nil {
+		log.Fatalf("Error fetching products: %v", err)
 		return nil, err
 	}
 
@@ -131,6 +132,7 @@ func (r *SQLSubCategoryRepository) ListSubCategories(ctx context.Context) ([]mod
 	// Get subcategories in a category from the database
 	subCategories, err := r.DB.ListAllSubCategories(ctx)
 	if err != nil {
+		log.Fatalf("Error fetching subcategories: %v", err)
 		return nil, err
 	}
 

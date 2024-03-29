@@ -77,8 +77,8 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler) {
 	productRouter := r.PathPrefix("/api/products").Subrouter()
 	productRouter.HandleFunc("/list", productHandler.GetProducts).Methods(http.MethodGet)
-	productRouter.HandleFunc("/create", productHandler.AddProduct).Methods(http.MethodPost)
-	//productRouter.HandleFunc("/update", productHandler.UpdateProduct).Methods(http.MethodPut)
+	productRouter.HandleFunc("/create", productHandler.CreateProduct).Methods(http.MethodPost)
+	productRouter.HandleFunc("/update", productHandler.UpdateProduct).Methods(http.MethodPut)
 	productRouter.HandleFunc("/delete", productHandler.DeleteProduct).Methods(http.MethodDelete)
 	productRouter.HandleFunc("/detail", productHandler.GetProductById).Methods(http.MethodGet)
 	productRouter.HandleFunc("/list/available", productHandler.GetAvailableProducts).Methods(http.MethodGet)
@@ -89,6 +89,8 @@ func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler) {
 	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trending", productHandler.GetTrendingProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/colours", productHandler.GetAllColours).Methods(http.MethodGet)
+	productRouter.HandleFunc("/materials", productHandler.GetAllMaterials).Methods(http.MethodGet)
 }
 
 func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
@@ -108,7 +110,7 @@ func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler)
 
 func getSubCategoryRouter(r *mux.Router, subCategoryHandler *handlers.SubCategoryHandler) {
 	subCategoryRouter := r.PathPrefix("/api/sub-categories").Subrouter()
-	//subCategoryRouter.HandleFunc("", subCategoryHandler.GetSubCategories).Methods(http.MethodGet)
+	subCategoryRouter.HandleFunc("", subCategoryHandler.GetAllSubCategories).Methods(http.MethodGet)
 	//subCategoryRouter.HandleFunc("/{id}/", subCategoryHandler.GetSubCategoryById).Methods(http.MethodGet)
 	subCategoryRouter.HandleFunc("/{categoryId}", subCategoryHandler.ListSubCategoriesByCategory).Methods(http.MethodGet)
 	subCategoryRouter.HandleFunc("/products/{subCategoryId}", subCategoryHandler.GetProductsBySubCategory).Methods(http.MethodGet)

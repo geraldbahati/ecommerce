@@ -58,8 +58,10 @@ func (r *SQLProductRepository) AddProduct(ctx context.Context, product model.Add
 	}, err
 }
 
-// Updates an already existing product in the database
-func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product database.UpdateProductParams) (database.Product, error) {
+// UpdateProduct updates an already existing product in the database
+func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product model.UpdateProductParams) (model.Product, error) {
+	// Update product in the database
+	log.Printf("Updating product with id %s", product.ID.String())
 	updatedProduct, err := r.DB.UpdateProduct(ctx, database.UpdateProductParams{
 		ID:            product.ID,
 		Name:          product.Name,
@@ -77,12 +79,12 @@ func (r *SQLProductRepository) UpdateProduct(ctx context.Context, product databa
 	})
 
 	if err != nil {
-		log.Printf("Error updating product with id %s: %s", product.ID.String(), err.Error())
-		return database.Product{}, err
+		log.Fatalf("Error updating product with id %s: %s", product.ID.String(), err.Error())
+		return model.Product{}, err
 	}
 
 	// Return updated Product
-	return database.Product{
+	return model.Product{
 		ID:            updatedProduct.ID,
 		Name:          updatedProduct.Name,
 		Description:   updatedProduct.Description,
@@ -226,4 +228,249 @@ func (r *SQLProductRepository) GetProductCount(ctx context.Context) (int64, erro
 		return 0, err
 	}
 	return productCount, nil
+}
+
+// CreateProductColour creates a new product colour in the database
+func (r *SQLProductRepository) CreateProductColour(ctx context.Context, colourHex string) (model.Colour, error) {
+	// Add product colour into database
+	log.Printf("Adding product colour with hex %s", colourHex)
+
+	addProductColour, err := r.DB.CreateColour(ctx, database.CreateColourParams{
+		ID:        uuid.New(),
+		ColourHex: colourHex,
+	})
+	if err != nil {
+		log.Fatalf("Error adding product colour with hex %s: %s\n", colourHex, err.Error())
+		return model.Colour{}, err
+	}
+
+	// Return newly added product colour
+	return model.Colour{
+		ID:          addProductColour.ID,
+		ColourHex:   addProductColour.ColourHex,
+		CreatedAt:   addProductColour.CreatedAt,
+		LastUpdated: addProductColour.LastUpdated,
+	}, err
+}
+
+// CreateProductMaterial creates a new product material in the database
+func (r *SQLProductRepository) CreateProductMaterial(ctx context.Context, materialName string) (model.Material, error) {
+	// Add product material into database
+	log.Printf("Adding product material with name %s", materialName)
+	addProductMaterial, err := r.DB.CreateMaterial(ctx, database.CreateMaterialParams{
+		ID:   uuid.New(),
+		Name: materialName,
+	})
+	if err != nil {
+		log.Fatalf("Error adding product material with name %s: %s\n", materialName, err.Error())
+		return model.Material{}, err
+	}
+
+	// Return newly added product material
+	return model.Material{
+		ID:          addProductMaterial.ID,
+		Name:        addProductMaterial.Name,
+		CreatedAt:   addProductMaterial.CreatedAt,
+		LastUpdated: addProductMaterial.LastUpdated,
+	}, err
+}
+
+// UpdateProductColour updates an already existing product colour in the database
+func (r *SQLProductRepository) UpdateProductColour(ctx context.Context, productId uuid.UUID, colourId uuid.UUID) (model.ProductColour, error) {
+	// Update product colour in the database
+	log.Printf("Updating product colour with id %s", colourId.String())
+	updateProductColour, err := r.DB.UpdateProductColour(ctx, database.UpdateProductColourParams{
+		ID:        uuid.New(),
+		ProductID: productId,
+		ColourID:  colourId,
+	})
+	if err != nil {
+		log.Fatalf("Error updating product colour with id %s: %s\n", colourId.String(), err.Error())
+		return model.ProductColour{}, err
+	}
+
+	// Return updated product colour
+	return model.ProductColour{
+		ID:          updateProductColour.ID,
+		CreatedAt:   updateProductColour.CreatedAt,
+		LastUpdated: updateProductColour.LastUpdated,
+	}, err
+}
+
+// UpdateProductMaterial updates an already existing product material in the database
+func (r *SQLProductRepository) UpdateProductMaterial(ctx context.Context, productId uuid.UUID, materialId uuid.UUID) (model.ProductMaterial, error) {
+	// Update product material in the database
+	log.Printf("Updating product material with id %s", materialId.String())
+	updateProductMaterial, err := r.DB.UpdateProductMaterial(ctx, database.UpdateProductMaterialParams{
+		ID:         uuid.New(),
+		ProductID:  productId,
+		MaterialID: materialId,
+	})
+	if err != nil {
+		log.Fatalf("Error updating product material with id %s: %s\n", materialId.String(), err.Error())
+		return model.ProductMaterial{}, err
+	}
+
+	// Return updated product material
+	return model.ProductMaterial{
+		ID:          updateProductMaterial.ID,
+		CreatedAt:   updateProductMaterial.CreatedAt,
+		LastUpdated: updateProductMaterial.LastUpdated,
+	}, err
+}
+
+// GetAllColours gets all colours from the database
+func (r *SQLProductRepository) GetAllColours(ctx context.Context, offset int32, limit int32) ([]model.Colour, error) {
+	colours, err := r.DB.GetColours(ctx, database.GetColoursParams{
+		Offset: offset,
+		Limit:  limit,
+	})
+	if err != nil {
+		log.Printf("Error fetching product colours : %s", err.Error())
+		return []model.Colour{}, err
+	}
+
+	// Return product colours
+	var modelColours []model.Colour
+	for _, colour := range colours {
+		modelColours = append(modelColours, model.Colour{
+			ID:          colour.ID,
+			ColourHex:   colour.ColourHex,
+			CreatedAt:   colour.CreatedAt,
+			LastUpdated: colour.LastUpdated,
+		})
+	}
+
+	return modelColours, nil
+}
+
+// GetAllMaterials gets all materials from the database
+func (r *SQLProductRepository) GetAllMaterials(ctx context.Context, offset int32, limit int32) ([]model.Material, error) {
+	materials, err := r.DB.GetMaterials(ctx, database.GetMaterialsParams{
+		Offset: offset,
+		Limit:  limit,
+	})
+	if err != nil {
+		log.Printf("Error fetching product materials : %s", err.Error())
+		return []model.Material{}, err
+	}
+
+	// Return product materials
+	var modelMaterials []model.Material
+	for _, material := range materials {
+		modelMaterials = append(modelMaterials, model.Material{
+			ID:          material.ID,
+			Name:        material.Name,
+			CreatedAt:   material.CreatedAt,
+			LastUpdated: material.LastUpdated,
+		})
+	}
+
+	return modelMaterials, nil
+}
+
+// GetProductColours gets all colours of a product from the database
+func (r *SQLProductRepository) GetProductColours(ctx context.Context, productId uuid.UUID, offset int32, limit int32) ([]model.Colour, error) {
+	productColours, err := r.DB.GetProductColours(ctx, database.GetProductColoursParams{
+		ProductID: productId,
+		Offset:    offset,
+		Limit:     limit,
+	})
+	if err != nil {
+		log.Printf("Error fetching product colours with product id %s: %s", productId.String(), err.Error())
+		return []model.Colour{}, err
+	}
+
+	// Return product colours
+	var modelColours []model.Colour
+	for _, colour := range productColours {
+		modelColours = append(modelColours, model.Colour{
+			ID:          colour.ID,
+			ColourHex:   colour.ColourHex,
+			CreatedAt:   colour.CreatedAt,
+			LastUpdated: colour.LastUpdated,
+		})
+	}
+
+	return modelColours, nil
+}
+
+// GetProductMaterials gets all materials of a product from the database
+func (r *SQLProductRepository) GetProductMaterials(ctx context.Context, productId uuid.UUID, offset int32, limit int32) ([]model.Material, error) {
+	productMaterials, err := r.DB.GetProductMaterials(ctx, database.GetProductMaterialsParams{
+		ProductID: productId,
+		Offset:    offset,
+		Limit:     limit,
+	})
+	if err != nil {
+		log.Printf("Error fetching product materials with product id %s: %s", productId.String(), err.Error())
+		return []model.Material{}, err
+	}
+
+	// Return product materials
+	var modelMaterials []model.Material
+	for _, material := range productMaterials {
+		modelMaterials = append(modelMaterials, model.Material{
+			ID:          material.ID,
+			Name:        material.Name,
+			CreatedAt:   material.CreatedAt,
+			LastUpdated: material.LastUpdated,
+		})
+	}
+
+	return modelMaterials, nil
+}
+
+// GetColourByHex gets a colour by its hex value from the database
+func (r *SQLProductRepository) GetColourByHex(ctx context.Context, hex string) (model.Colour, error) {
+	colour, err := r.DB.GetColourByHex(ctx, hex)
+	if err != nil {
+		log.Printf("Error fetching colour with hex %s: %s", hex, err.Error())
+		return model.Colour{}, err
+	}
+
+	// Return product colour
+	return model.Colour{
+		ID:          colour.ID,
+		ColourHex:   colour.ColourHex,
+		CreatedAt:   colour.CreatedAt,
+		LastUpdated: colour.LastUpdated,
+	}, nil
+}
+
+// GetColourCount gets the count of all colours in the database
+func (r *SQLProductRepository) GetColourCount(ctx context.Context) (int64, error) {
+	colourCount, err := r.DB.GetColourCount(ctx)
+	if err != nil {
+		log.Printf("Error fetching colour count : %s", err.Error())
+		return 0, err
+	}
+	return colourCount, nil
+}
+
+// GetMaterialCount gets the count of all materials in the database
+func (r *SQLProductRepository) GetMaterialCount(ctx context.Context) (int64, error) {
+	materialCount, err := r.DB.GetMaterialCount(ctx)
+	if err != nil {
+		log.Printf("Error fetching material count : %s", err.Error())
+		return 0, err
+	}
+	return materialCount, nil
+}
+
+// GetMaterialByName gets a material by its name from the database
+func (r *SQLProductRepository) GetMaterialByName(ctx context.Context, materialName string) (model.Material, error) {
+	material, err := r.DB.GetMaterialByName(ctx, materialName)
+	if err != nil {
+		log.Printf("Error fetching material with name %s: %s", materialName, err.Error())
+		return model.Material{}, err
+	}
+
+	// Return product material
+	return model.Material{
+		ID:          material.ID,
+		Name:        material.Name,
+		CreatedAt:   material.CreatedAt,
+		LastUpdated: material.LastUpdated,
+	}, nil
 }

@@ -98,3 +98,16 @@ func (h *SubCategoryHandler) ListSubCategoriesByCategory(w http.ResponseWriter, 
 	// respond with sub categories
 	RespondWithJSON(w, http.StatusOK, subCategories)
 }
+
+// GetAllSubCategories lists all sub categories
+func (h *SubCategoryHandler) GetAllSubCategories(w http.ResponseWriter, r *http.Request) {
+	// get sub categories
+	subCategories, err := h.subCategoryService.ListSubCategories(r.Context())
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to get sub categories")
+		return
+	}
+
+	// respond with sub categories
+	RespondWithJSON(w, http.StatusOK, subCategories)
+}

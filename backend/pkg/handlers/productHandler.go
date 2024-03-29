@@ -36,17 +36,20 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, products)
 }
 
-func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
+// CreateProduct creates a new product
+func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	// Parameters
 	var params struct {
-		Name          string `json:"name"`
-		Description   string `json:"description"`
-		ImageUrl      string `json:"image_url"`
-		Price         string `json:"price"`
-		Stock         int32  `json:"stock"`
-		SubCategoryID string `json:"sub_category_id"`
-		Brand         string `json:"brand"`
-		Keywords      string `json:"keywords"`
+		Name          string   `json:"name"`
+		Description   string   `json:"description"`
+		ImageUrl      string   `json:"image_url"`
+		Price         string   `json:"price"`
+		Stock         int32    `json:"stock"`
+		SubCategoryID string   `json:"sub_category_id"`
+		Brand         string   `json:"brand"`
+		Keywords      string   `json:"keywords"`
+		Colours       []string `json:"colours"`
+		Materials     []string `json:"materials"`
 	}
 
 	// Decoding request body
@@ -55,7 +58,19 @@ func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Add product
-	product, err := h.productService.AddProduct(r.Context(), params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.SubCategoryID, params.Brand, params.Keywords)
+	product, err := h.productService.AddProduct(
+		r.Context(),
+		params.Name,
+		params.Description,
+		params.ImageUrl,
+		params.Price,
+		params.Stock,
+		params.SubCategoryID,
+		params.Brand,
+		params.Keywords,
+		params.Colours,
+		params.Materials,
+	)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to add new product: %v", err))
 		return
@@ -65,40 +80,59 @@ func (h *ProductHandler) AddProduct(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, product)
 }
 
-//func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-//	// Parameters
-//	var params struct {
-//		ID           uuid.UUID      `json:"id"`
-//		Name         string         `json:"name"`
-//		Description  sql.NullString `json:"description"`
-//		ImageUrl     sql.NullString `json:"image_url"`
-//		Price        string         `json:"price"`
-//		Stock        int32          `json:"stock"`
-//		CategoryID   uuid.UUID      `json:"category_id"`
-//		Brand        sql.NullString `json:"brand"`
-//		Rating       string         `json:"rating"`
-//		ReviewCount  int32          `json:"review_count"`
-//		DiscountRate string         `json:"discount_rate"`
-//		Keywords     sql.NullString `json:"keywords"`
-//		IsActive     bool           `json:"is_active"`
-//	}
-//
-//	// Decoding request body
-//	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
-//		RespondWithError(w, http.StatusBadRequest, fmt.Sprint("Failed to decode request body: %v", err))
-//		return
-//	}
-//
-//	// Update product
-//	product, err := h.productService.UpdateProduct(r.Context(), params.ID, params.Name, params.Description, params.ImageUrl, params.Price, params.Stock, params.CategoryID, params.Brand, params.Rating, params.ReviewCount, params.DiscountRate, params.Keywords, params.IsActive)
-//	if err != nil {
-//		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update user: %v", err))
-//		return
-//	}
-//
-//	// Respond with updated product
-//	RespondWithJSON(w, http.StatusOK, product)
-//}
+func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	// Parameters
+	var params struct {
+		ID            string   `json:"id"`
+		Name          string   `json:"name"`
+		Description   string   `json:"description"`
+		ImageUrl      string   `json:"image_url"`
+		Price         string   `json:"price"`
+		Stock         int32    `json:"stock"`
+		SubCategoryId string   `json:"category_id"`
+		Brand         string   `json:"brand"`
+		Rating        string   `json:"rating"`
+		ReviewCount   int32    `json:"review_count"`
+		DiscountRate  string   `json:"discount_rate"`
+		Keywords      string   `json:"keywords"`
+		IsActive      bool     `json:"is_active"`
+		Colours       []string `json:"colours"`
+		Materials     []string `json:"materials"`
+	}
+
+	// Decoding request body
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, fmt.Sprintf("Failed to decode request body: %v", err))
+		return
+	}
+
+	// Update product
+	product, err := h.productService.UpdateProduct(
+		r.Context(),
+		params.ID,
+		params.Name,
+		params.Description,
+		params.ImageUrl,
+		params.Price,
+		params.Stock,
+		params.SubCategoryId,
+		params.Brand,
+		params.Rating,
+		params.ReviewCount,
+		params.DiscountRate,
+		params.Keywords,
+		params.IsActive,
+		params.Colours,
+		params.Materials,
+	)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to update user: %v", err))
+		return
+	}
+
+	// Respond with updated product
+	RespondWithJSON(w, http.StatusOK, product)
+}
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	var params struct {
@@ -222,4 +256,43 @@ func (h *ProductHandler) GetTrendingProducts(w http.ResponseWriter, r *http.Requ
 
 	// Respond with trending products
 	RespondWithJSON(w, http.StatusOK, trendingProducts)
+}
+
+// GetAllColours gets all colours
+func (h *ProductHandler) GetAllColours(w http.ResponseWriter, r *http.Request) {
+	// get page and page size
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page_size")
+
+	// get page and page size
+	page, pageSize, err := GetPageAndPageSize(pageStr, pageSizeStr)
+	// Fetch all colours
+	colours, err := h.productService.GetAllColours(r.Context(), pageSize, page)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching all colours: %v", err))
+		return
+	}
+
+	// Respond with all colours
+	RespondWithJSON(w, http.StatusOK, colours)
+}
+
+// GetAllMaterials gets all materials
+func (h *ProductHandler) GetAllMaterials(w http.ResponseWriter, r *http.Request) {
+	// get page and page size
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page_size")
+
+	// get page and page size
+	page, pageSize, err := GetPageAndPageSize(pageStr, pageSizeStr)
+
+	// Fetch all materials
+	materials, err := h.productService.GetAllMaterials(r.Context(), pageSize, page)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching all materials: %v", err))
+		return
+	}
+
+	// Respond with all materials
+	RespondWithJSON(w, http.StatusOK, materials)
 }
