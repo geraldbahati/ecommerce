@@ -8,21 +8,21 @@ import (
 )
 
 type Product struct {
-	ID           uuid.UUID      `json:"id"`
-	Name         string         `json:"name"`
-	Description  sql.NullString `json:"description"`
-	ImageUrl     sql.NullString `json:"image_url"`
-	Price        string         `json:"price"`
-	Stock        int32          `json:"stock"`
-	CategoryID   uuid.UUID      `json:"category_id"`
-	Brand        sql.NullString `json:"brand"`
-	Rating       string         `json:"rating"`
-	ReviewCount  int32          `json:"review_count"`
-	DiscountRate string         `json:"discount_rate"`
-	Keywords     sql.NullString `json:"keywords"`
-	IsActive     bool           `json:"is_active"`
-	CreatedAt    time.Time      `json:"created_at"`
-	LastUpdated  sql.NullTime   `json:"last_updated"`
+	ID            uuid.UUID      `json:"id"`
+	Name          string         `json:"name"`
+	Description   sql.NullString `json:"description"`
+	ImageUrl      sql.NullString `json:"image_url"`
+	Price         string         `json:"price"`
+	Stock         int32          `json:"stock"`
+	SubCategoryID uuid.NullUUID  `json:"sub_category_id"`
+	Brand         sql.NullString `json:"brand"`
+	Rating        string         `json:"rating"`
+	ReviewCount   int32          `json:"review_count"`
+	DiscountRate  string         `json:"discount_rate"`
+	Keywords      sql.NullString `json:"keywords"`
+	IsActive      bool           `json:"is_active"`
+	CreatedAt     time.Time      `json:"created_at"`
+	LastUpdated   sql.NullTime   `json:"last_updated"`
 }
 
 type ProductListing struct {
@@ -58,12 +58,76 @@ type TrendingProduct struct {
 }
 
 type AddProductParams struct {
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	ImageUrl    sql.NullString `json:"image_url"`
-	Price       string         `json:"price"`
-	Stock       int32          `json:"stock"`
-	CategoryID  uuid.UUID      `json:"category_id"`
-	Brand       sql.NullString `json:"brand"`
-	Keywords    sql.NullString `json:"keywords"`
+	Name          string         `json:"name"`
+	Description   sql.NullString `json:"description"`
+	ImageUrl      sql.NullString `json:"image_url"`
+	Price         string         `json:"price"`
+	Stock         int32          `json:"stock"`
+	SubCategoryID uuid.NullUUID  `json:"sub_category_id"`
+	Brand         sql.NullString `json:"brand"`
+	Keywords      sql.NullString `json:"keywords"`
+}
+
+type GetProductsByCategoryRow struct {
+	ID              uuid.UUID      `json:"id"`
+	Name            string         `json:"name"`
+	Description     sql.NullString `json:"description"`
+	ImageUrl        sql.NullString `json:"image_url"`
+	Price           string         `json:"price"`
+	Stock           int32          `json:"stock"`
+	Brand           sql.NullString `json:"brand"`
+	Rating          string         `json:"rating"`
+	ReviewCount     int32          `json:"review_count"`
+	DiscountRate    string         `json:"discount_rate"`
+	Keywords        sql.NullString `json:"keywords"`
+	IsActive        bool           `json:"is_active"`
+	CreatedAt       time.Time      `json:"created_at"`
+	LastUpdated     sql.NullTime   `json:"last_updated"`
+	SubCategoryID   uuid.NullUUID  `json:"sub_category_id"`
+	SubCategoryName string         `json:"sub_category_name"`
+	CategoryName    string         `json:"category_name"`
+}
+
+type ProductMaterial struct {
+	ID          uuid.UUID    `json:"id"`
+	ProductID   uuid.UUID    `json:"product_id"`
+	MaterialID  uuid.UUID    `json:"material_id"`
+	CreatedAt   time.Time    `json:"created_at"`
+	LastUpdated sql.NullTime `json:"last_updated"`
+}
+
+type ProductColour struct {
+	ID          uuid.UUID    `json:"id"`
+	ProductID   uuid.UUID    `json:"product_id"`
+	ColourID    uuid.UUID    `json:"colour_id"`
+	CreatedAt   time.Time    `json:"created_at"`
+	LastUpdated sql.NullTime `json:"last_updated"`
+}
+
+type UpdateProductParams struct {
+	ID            uuid.UUID      `json:"id"`
+	Name          string         `json:"name"`
+	Description   sql.NullString `json:"description"`
+	ImageUrl      sql.NullString `json:"image_url"`
+	Price         string         `json:"price"`
+	Stock         int32          `json:"stock"`
+	SubCategoryID uuid.NullUUID  `json:"sub_category_id"`
+	Brand         sql.NullString `json:"brand"`
+	Rating        string         `json:"rating"`
+	ReviewCount   int32          `json:"review_count"`
+	DiscountRate  string         `json:"discount_rate"`
+	Keywords      sql.NullString `json:"keywords"`
+	IsActive      bool           `json:"is_active"`
+}
+
+type UpdateProductColourParams struct {
+	ID        uuid.UUID `json:"id"`
+	ProductID uuid.UUID `json:"product_id"`
+	ColourID  uuid.UUID `json:"colour_id"`
+}
+
+type UpdateProductMaterialParams struct {
+	ID         uuid.UUID `json:"id"`
+	ProductID  uuid.UUID `json:"product_id"`
+	MaterialID uuid.UUID `json:"material_id"`
 }

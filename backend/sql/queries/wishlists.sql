@@ -12,14 +12,6 @@ RETURNING id, wishlist_id, product_id, priority, created_at, last_updated;
 DELETE FROM wishlist_items
 WHERE wishlist_id = $1 AND product_id = $2;
 
--- name: ListAllItemsInUserWishlist :many
-SELECT p.id, p.name, p.description, p.image_url, p.category_id
-FROM products p
-JOIN wishlist_items wi ON p.id = wi.product_id
-JOIN wishlists w ON wi.wishlist_id = w.id
-WHERE w.user_id = $1
-ORDER BY wi.created_at DESC
-LIMIT $2 OFFSET $3;
 
 -- name: UpdateWishlist :one
 UPDATE wishlists SET

@@ -29,16 +29,19 @@ func main() {
 	userRepo := sqlc.NewSQLUserRepository(db)
 	productRepo := sqlc.NewSQLProductRepository(db)
 	categoryRepo := sqlc.NewSQLCategoryRepository(db)
+	subCategoryRepo := sqlc.NewSQLSubCategoryRepository(db)
 
 	// initialize services
 	userService := usecases.NewUserService(userRepo)
 	productService := usecases.NewProductService(productRepo)
 	categoryService := usecases.NewCategoryService(categoryRepo)
+	subCategoryService := usecases.NewSubCategoryService(subCategoryRepo)
 
 	// initialize handlers
 	userHandler := handlers.NewUserHandler(userService)
 	productHandler := handlers.NewProductHandler(productService)
 	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	subCategoryHandler := handlers.NewSubCategoryHandler(subCategoryService)
 
 	// setup routes
 	r := mux.NewRouter()
@@ -47,6 +50,7 @@ func main() {
 	getUserRouter(r, userHandler)
 	getProductRouter(r, productHandler)
 	getCategoryRouter(r, categoryHandler)
+	getSubCategoryRouter(r, subCategoryHandler)
 
 	// start server
 	log.Printf("Server listening on port %s", cfg.Port)
@@ -73,18 +77,20 @@ func getUserRouter(r *mux.Router, userHandler *handlers.UserHandler) {
 func getProductRouter(r *mux.Router, productHandler *handlers.ProductHandler) {
 	productRouter := r.PathPrefix("/api/products").Subrouter()
 	productRouter.HandleFunc("/list", productHandler.GetProducts).Methods(http.MethodGet)
-	productRouter.HandleFunc("/create", productHandler.AddProduct).Methods(http.MethodPost)
+	productRouter.HandleFunc("/create", productHandler.CreateProduct).Methods(http.MethodPost)
 	productRouter.HandleFunc("/update", productHandler.UpdateProduct).Methods(http.MethodPut)
 	productRouter.HandleFunc("/delete", productHandler.DeleteProduct).Methods(http.MethodDelete)
 	productRouter.HandleFunc("/detail", productHandler.GetProductById).Methods(http.MethodGet)
 	productRouter.HandleFunc("/list/available", productHandler.GetAvailableProducts).Methods(http.MethodGet)
-	productRouter.HandleFunc("/list/filtered", productHandler.GetFilteredProducts).Methods(http.MethodGet)
-	productRouter.HandleFunc("/list/paginated", productHandler.GetPaginatedProducts).Methods(http.MethodGet)
-	productRouter.HandleFunc("/recommended", productHandler.GetProductWithRecommendations).Methods(http.MethodGet)
-	productRouter.HandleFunc("/categorized", productHandler.GetProductsByCategory).Methods(http.MethodGet)
+	//productRouter.HandleFunc("/list/filtered", productHandler.GetFilteredProducts).Methods(http.MethodGet)
+	//productRouter.HandleFunc("/list/paginated", productHandler.GetPaginatedProducts).Methods(http.MethodGet)
+	//productRouter.HandleFunc("/recommended", productHandler.GetProductWithRecommendations).Methods(http.MethodGet)
+	productRouter.HandleFunc("/{category_id}/", productHandler.GetProductsByCategory).Methods(http.MethodGet)
 	productRouter.HandleFunc("/search", productHandler.SearchProducts).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trend", productHandler.GetSalesTrends).Methods(http.MethodGet)
 	productRouter.HandleFunc("/trending", productHandler.GetTrendingProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/colours", productHandler.GetAllColours).Methods(http.MethodGet)
+	productRouter.HandleFunc("/materials", productHandler.GetAllMaterials).Methods(http.MethodGet)
 }
 
 func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler) {
@@ -100,4 +106,18 @@ func getCategoryRouter(r *mux.Router, categoryHandler *handlers.CategoryHandler)
 	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.UpdateCategory).Methods(http.MethodPut)
 	protectedCategoryRouter.HandleFunc("/{id}/", categoryHandler.DeleteCategory).Methods(http.MethodDelete)
 	protectedCategoryRouter.HandleFunc("", categoryHandler.CreateCategory).Methods(http.MethodPost)
+}
+
+func getSubCategoryRouter(r *mux.Router, subCategoryHandler *handlers.SubCategoryHandler) {
+	subCategoryRouter := r.PathPrefix("/api/sub-categories").Subrouter()
+	subCategoryRouter.HandleFunc("", subCategoryHandler.GetAllSubCategories).Methods(http.MethodGet)
+	//subCategoryRouter.HandleFunc("/{id}/", subCategoryHandler.GetSubCategoryById).Methods(http.MethodGet)
+	subCategoryRouter.HandleFunc("/{categoryId}", subCategoryHandler.ListSubCategoriesByCategory).Methods(http.MethodGet)
+	subCategoryRouter.HandleFunc("/products/{subCategoryId}", subCategoryHandler.GetProductsBySubCategory).Methods(http.MethodGet)
+
+	protectedSubCategoryRouter := subCategoryRouter.PathPrefix("").Subrouter()
+	protectedSubCategoryRouter.Use(middleware.Auth)
+	protectedSubCategoryRouter.HandleFunc("", subCategoryHandler.CreateSubCategory).Methods(http.MethodPost)
+	//protectedSubCategoryRouter.HandleFunc("/{id}/", subCategoryHandler.UpdateSubCategory).Methods(http.MethodPut)
+	//protectedSubCategoryRouter.HandleFunc("/{id}/", subCategoryHandler.DeleteSubCategory).Methods(http.MethodDelete)
 }
